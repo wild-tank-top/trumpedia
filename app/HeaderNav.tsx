@@ -30,7 +30,7 @@ export default function HeaderNav({ session }: { session: Session | null }) {
     );
   }
 
-  const role = session.user.role ?? "guest";
+  const role = session.user?.role ?? "guest";
   const badge = ROLE_LABELS[role] ?? ROLE_LABELS.guest;
 
   return (
@@ -42,7 +42,7 @@ export default function HeaderNav({ session }: { session: Session | null }) {
         質問を投稿
       </Link>
 
-      {session.user.role === "admin" && (
+      {session.user?.role === "admin" && (
         <Link href="/admin" className="text-sm text-red-600 hover:underline">
           管理
         </Link>

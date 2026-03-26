@@ -30,7 +30,7 @@ export default function AnswerForm({
   }
 
   // Proでない
-  if (session.user.role !== "pro" && session.user.role !== "admin") {
+  if (session.user?.role !== "pro" && session.user?.role !== "admin") {
     return (
       <div className="text-center py-6 text-gray-500">
         <p className="text-sm">回答の投稿は <span className="font-semibold text-teal-600">Proユーザー</span> のみ可能です。</p>
