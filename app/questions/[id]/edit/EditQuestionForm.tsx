@@ -1,0 +1,166 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { CATEGORIES } from "@/lib/constants";
+
+type Question = {
+  id: number;
+  title: string;
+  category: string;
+  level: string;
+  content: string;
+};
+
+const LEVELS = [
+  { value: "beginner", label: "初級" },
+  { value: "intermediate", label: "中級" },
+  { value: "advanced", label: "上級" },
+];
+
+export default function EditQuestionForm({ question }: { question: Question }) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    const form = e.currentTarget;
+    const get = (name: string) =>
+      (form.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value;
+
+    const data = {
+      title: get("title"),
+      category: get("category"),
+      level: get("level"),
+      content: get("content"),
+    };
+
+    const res = await fetch(`/api/questions/${question.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    if (res.ok) {
+      router.push(`/questions/${question.id}`);
+      router.refresh();
+    } else {
+      const json = await res.json();
+      setError(json.error ?? "エラーが発生しました");
+      setLoading(false);
+    }
+  }
+
+  return (
+    <>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">質問を編集する</h1>
+        <Link
+          href={`/questions/${question.id}`}
+          className="text-sm text-gray-400 hover:text-gray-600"
+        >
+          ← 戻る
+        </Link>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <Field label="タイトル" required hint="質問文そのものを書いてください（10文字以上推奨）">
+          <input
+            name="title"
+            type="text"
+            required
+            minLength={10}
+            defaultValue={question.title}
+            className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+          />
+        </Field>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="カテゴリ" required>
+            <select
+              name="category"
+              required
+              defaultValue={question.category}
+              className="w-full border border-gray-300 rounded-lg p-3 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-400"
+            >
+              <option value="">選択してください</option>
+              {CATEGORIES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label="レベル" required>
+            <select
+              name="level"
+              required
+              defaultValue={question.level}
+              className="w-full border border-gray-300 rounded-lg p-3 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-400"
+            >
+              <option value="">選択してください</option>
+              {LEVELS.map((l) => (
+                <option key={l.value} value={l.value}>{l.label}</option>
+              ))}
+            </select>
+          </Field>
+        </div>
+
+        <Field label="詳細・補足" required hint="質問の意図や背景、補足情報を書いてください">
+          <textarea
+            name="content"
+            required
+            rows={5}
+            defaultValue={question.content}
+            className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 resize-none"
+          />
+        </Field>
+
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+
+        <div className="flex gap-3 pt-2">
+          <Link
+            href={`/questions/${question.id}`}
+            className="flex-1 border border-gray-300 text-sm text-gray-600 py-2.5 rounded-lg hover:bg-gray-50 transition-colors text-center"
+          >
+            キャンセル
+          </Link>
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-sm py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50"
+          >
+            {loading ? "保存中..." : "変更を保存する"}
+          </button>
+        </div>
+      </form>
+    </>
+  );
+}
+
+function Field({
+  label,
+  required,
+  hint,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="block text-sm text-gray-600 mb-1 font-medium">
+        {label}
+        {required && <span className="text-red-400 ml-1">*</span>}
+      </label>
+      {hint && <p className="text-xs text-gray-400 mb-1.5">{hint}</p>}
+      {children}
+    </div>
+  );
+}

@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ── NextAuth 必須モデル ─────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?           // Credentials認証用（ハッシュ済み）
+  role          String    @default("guest") // guest / pro / admin
+  createdAt     DateTime  @default(now())
+
+  accounts  Account[]
+  sessions  Session[]
+  answers   Answer[]
+  profile   Profile?
+  questions Question[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ── アプリモデル ────────────────────────────────────
+
+model Profile {
+  id        Int    @id @default(autoincrement())
+  userId    String @unique
+  bio       String @default("")
+  career    String @default("")
+  twitter   String @default("")
+  youtube   String @default("")
+  instagram String @default("")
+  website   String @default("")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Question {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String   // 詳細・補足（質問の意図・背景）
+  category  String
+  level     String
+  status    String   @default("pending") // pending / approved / rejected
+  userId    String?  // 投稿者ID
+  createdAt DateTime @default(now())
+
+  // TODO: AIでサムネイル自動生成を追加予定
+
+  answers Answer[]
+  user    User?    @relation(fields: [userId], references: [id])
+}
+
+model Answer {
+  id            Int      @id @default(autoincrement())
+  questionId    Int
+  userId        String
+  summary       String
+  causeAnalysis String
+  thinking      String
+  approach      String
+  ngExamples    String
+  exceptions    String
+  philosophy    String
+  createdAt     DateTime @default(now())
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id])
+}
