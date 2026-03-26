@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import AdminQuestions from "./AdminQuestions";
 import AdminUsers from "./AdminUsers";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminPage() {
   const [allQuestions, users] = await Promise.all([
     // 全ステータスの質問を取得（AdminQuestionsでクライアント側フィルター）

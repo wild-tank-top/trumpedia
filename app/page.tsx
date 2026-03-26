@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import type { Question } from "@prisma/client";
 import CategoryFilter from "./CategoryFilter";
 
+export const dynamic = "force-dynamic";
+
 const LEVEL_LABELS: Record<string, string> = {
   beginner: "初級",
   intermediate: "中級",

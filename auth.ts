@@ -20,20 +20,32 @@ declare module "next-auth" {
 }
 
 // ── NextAuth設定 ──────────────────────────────────────
+// Google OAuthはenv変数が設定されている場合のみ有効化
+const googleProvider =
+  process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+    ? Google({
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        profile(profile) {
+          return {
+            id: profile.sub,
+            name: profile.name,
+            email: profile.email,
+            image: profile.picture,
+            role: "guest",
+          };
+        },
+      })
+    : null;
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma) as Adapter,
 
-  // セッションはJWT方式（DBに保存しないためシンプル）
   session: { strategy: "jwt" },
 
   providers: [
-    // Google OAuth（本番環境向け）
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
-    }),
+    ...(googleProvider ? [googleProvider] : []),
 
-    // メール＋パスワード（ローカル開発向け）
     Credentials({
       name: "メールアドレスでログイン",
       credentials: {
@@ -45,47 +57,60 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const password = credentials?.password as string | undefined;
         if (!email || !password) return null;
 
-        const user = await prisma.user.findUnique({ where: { email } });
+        const user = await prisma.user.findUnique({
+          where: { email },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            password: true,
+            role: true,
+          },
+        });
+
         if (!user || !user.password) return null;
 
         const valid = await bcrypt.compare(password, user.password);
         if (!valid) return null;
 
-        return { id: user.id, name: user.name, email: user.email, role: user.role };
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        };
       },
     }),
   ],
 
   callbacks: {
-    // JWTにroleとidを追加
     async jwt({ token, user }) {
-      // ログイン直後: 初回セット
+      // 初回ログイン時のみuserオブジェクトが渡される
       if (user) {
         token.id = user.id;
-        token.role = user.role;
-        token.roleCheckedAt = Date.now();
+        token.role = user.role ?? "guest";
         return token;
       }
 
-      // 5分ごとにのみDBからroleを再取得（毎リクエストDB参照を防ぐ）
-      const FIVE_MINUTES = 5 * 60 * 1000;
-      const checkedAt = (token.roleCheckedAt as number | undefined) ?? 0;
-      if (token.id && Date.now() - checkedAt > FIVE_MINUTES) {
+      // 以降のリクエストでDBからroleを再取得（DBで変更した場合に反映される）
+      if (token.id) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
           select: { role: true },
         });
         if (dbUser) {
           token.role = dbUser.role;
-          token.roleCheckedAt = Date.now();
         }
       }
+
       return token;
     },
-    // セッションオブジェクトにidとroleを追加
+
     async session({ session, token }) {
-      session.user.id = token.id as string;
-      session.user.role = token.role as string;
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.role = (token.role as string) ?? "guest";
+      }
       return session;
     },
   },

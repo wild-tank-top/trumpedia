@@ -3,6 +3,8 @@ import "./globals.css";
 import { auth } from "@/auth";
 import HeaderNav from "./HeaderNav";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Trumpedia",
   description: "トランペット奏者の知見・思考プロセス・価値観を蓄積するWebアプリ",
