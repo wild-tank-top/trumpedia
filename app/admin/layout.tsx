@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 
 export const dynamic = "force-dynamic";
 
-// middleware.ts で1次ガード済み。ここで2次チェック（SSRレベル）
+// SSRレベルで認証・認可チェック
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
 
