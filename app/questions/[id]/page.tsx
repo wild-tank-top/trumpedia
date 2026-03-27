@@ -5,6 +5,7 @@ import type { Answer } from "@prisma/client";
 import { auth } from "@/auth";
 import AnswerForm from "./AnswerForm";
 import LikeButton from "./LikeButton";
+import DeleteAnswerButton from "./DeleteAnswerButton";
 import ViewTracker from "./ViewTracker";
 import Avatar from "@/app/components/Avatar";
 
@@ -172,12 +173,17 @@ export default async function QuestionDetailPage({
                     <p className="text-xs text-gray-400">{new Date(answer.createdAt).toLocaleDateString("ja-JP")}</p>
                   </div>
                 </div>
-                <LikeButton
-                  answerId={answer.id}
-                  initialCount={answer._count.likes}
-                  initialLiked={myLikedAnswerIds.has(answer.id)}
-                  isLoggedIn={!!session}
-                />
+                <div className="flex items-center gap-1">
+                  <LikeButton
+                    answerId={answer.id}
+                    initialCount={answer._count.likes}
+                    initialLiked={myLikedAnswerIds.has(answer.id)}
+                    isLoggedIn={!!session}
+                  />
+                  {(session?.user.id === answer.userId || session?.user.role === "admin") && (
+                    <DeleteAnswerButton answerId={answer.id} />
+                  )}
+                </div>
               </div>
 
               <div className="space-y-3 text-sm">
