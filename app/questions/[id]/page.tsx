@@ -25,8 +25,15 @@ export default async function QuestionDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [question, session] = await Promise.all([
-    prisma.question.findUnique({
+
+  const session = await auth().catch((err) => {
+    console.error("[QuestionDetail] auth() error:", err);
+    return null;
+  });
+
+  let question;
+  try {
+    question = await prisma.question.findUnique({
       where: { id: Number(id) },
       include: {
         answers: {
@@ -37,9 +44,11 @@ export default async function QuestionDetailPage({
           },
         },
       },
-    }),
-    auth(),
-  ]);
+    });
+  } catch (err) {
+    console.error("[QuestionDetail] DB error:", err);
+    notFound();
+  }
 
   if (!question) notFound();
 
@@ -53,17 +62,15 @@ export default async function QuestionDetailPage({
 
   // ログイン中ユーザーがいいねしている回答IDセット
   const myLikedAnswerIds = session?.user.id
-    ? new Set(
-        (
-          await prisma.like.findMany({
-            where: {
-              userId: session.user.id,
-              answerId: { in: question.answers.map((a) => a.id) },
-            },
-            select: { answerId: true },
-          })
-        ).map((l) => l.answerId)
-      )
+    ? await prisma.like.findMany({
+        where: {
+          userId: session.user.id,
+          answerId: { in: question.answers.map((a) => a.id) },
+        },
+        select: { answerId: true },
+      })
+        .then((likes) => new Set(likes.map((l) => l.answerId)))
+        .catch(() => new Set<number>())
     : new Set<number>();
 
   if (question.status !== "approved" && session?.user.role !== "admin" && !isOwner) {

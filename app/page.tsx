@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import type { Question } from "@prisma/client";
 import CategoryFilter from "./CategoryFilter";
 
 export const dynamic = "force-dynamic";
@@ -30,8 +29,16 @@ export default async function HomePage({
       ...(category ? { category } : {}),
     },
     orderBy: { createdAt: "desc" },
-    include: { _count: { select: { answers: true } } },
-    // TODO: AIサムネイル追加後は thumbnail フィールドを含める
+    // thumbnail は一覧では未表示のため select から除外（DBカラム依存を回避）
+    select: {
+      id: true,
+      title: true,
+      content: true,
+      category: true,
+      level: true,
+      createdAt: true,
+      _count: { select: { answers: true } },
+    },
   });
 
   return (
@@ -86,7 +93,7 @@ export default async function HomePage({
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {questions.map((q: Question & { _count: { answers: number } }) => (
+          {questions.map((q) => (
             <Link
               key={q.id}
               href={`/questions/${q.id}`}

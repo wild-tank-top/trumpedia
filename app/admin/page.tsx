@@ -7,8 +7,18 @@ export const dynamic = "force-dynamic";
 export default async function AdminPage() {
   const [allQuestions, users] = await Promise.all([
     // 全ステータスの質問を取得（AdminQuestionsでクライアント側フィルター）
+    // thumbnail は管理画面では不使用のため select から除外（DBカラム依存を回避）
     prisma.question.findMany({
       orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        category: true,
+        level: true,
+        status: true,
+        createdAt: true,
+      },
     }),
     prisma.user.findMany({
       orderBy: { createdAt: "desc" },
