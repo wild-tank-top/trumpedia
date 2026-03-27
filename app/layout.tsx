@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { auth } from "@/auth";
 import HeaderNav from "./HeaderNav";
+import Providers from "./providers";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,9 @@ export default async function RootLayout({
             <HeaderNav session={session} />
           </div>
         </header>
-        <main className="max-w-3xl mx-auto px-4 py-6">{children}</main>
+        <main className="max-w-3xl mx-auto px-4 py-6">
+          <Providers>{children}</Providers>
+        </main>
       </body>
     </html>
   );
