@@ -55,19 +55,29 @@ export default function NewQuestionPage() {
   async function doSubmit() {
     if (!pendingData) return;
     setLoading(true);
+    setError("");
 
-    const res = await fetch("/api/questions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(pendingData),
-    });
+    try {
+      const res = await fetch("/api/questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pendingData),
+      });
 
-    if (res.ok) {
-      const question = await res.json();
-      router.push(`/questions/${question.id}`);
-    } else {
-      const json = await res.json();
-      setError(json.error ?? "エラーが発生しました");
+      if (res.ok) {
+        const question = await res.json();
+        // router.push 後は loading = true のまま維持（遷移完了まで二重送信防止）
+        router.push(`/questions/${question.id}`);
+      } else {
+        const json = await res.json().catch(() => ({}));
+        const msg = json.error ?? "エラーが発生しました";
+        console.error("[NewQuestion] 投稿失敗:", msg);
+        setError(msg);
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error("[NewQuestion] ネットワークエラー:", err);
+      setError("通信エラーが発生しました。もう一度お試しください。");
       setLoading(false);
     }
   }
@@ -176,8 +186,14 @@ export default function NewQuestionPage() {
                 type="button"
                 onClick={doSubmit}
                 disabled={loading}
-                className="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-sm py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+                className="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-sm py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
+                {loading && (
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 000 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
+                  </svg>
+                )}
                 {loading ? "送信中..." : "投稿する"}
               </button>
             </div>
