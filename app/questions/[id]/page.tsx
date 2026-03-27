@@ -6,9 +6,10 @@ import { auth } from "@/auth";
 import AnswerForm from "./AnswerForm";
 import LikeButton from "./LikeButton";
 import ViewTracker from "./ViewTracker";
+import Avatar from "@/app/components/Avatar";
 
 type AnswerWithMeta = Answer & {
-  user: { name: string | null; id: string };
+  user: { name: string | null; id: string; image: string | null };
   _count: { likes: number };
 };
 
@@ -31,7 +32,7 @@ export default async function QuestionDetailPage({
         answers: {
           orderBy: { createdAt: "asc" },
           include: {
-            user: { select: { name: true, id: true } },
+            user: { select: { name: true, id: true, image: true } },
             _count: { select: { likes: true } },
           },
         },
@@ -144,9 +145,7 @@ export default async function QuestionDetailPage({
             <div key={answer.id} className="bg-white rounded-xl border border-gray-200 p-5">
               <div className="flex items-center justify-between gap-2 mb-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-teal-100 text-teal-700 rounded-full flex items-center justify-center text-sm font-bold shrink-0">
-                    {(answer.user.name ?? "?")[0]}
-                  </div>
+                  <Avatar src={answer.user.image} name={answer.user.name} size="sm" />
                   <div>
                     <Link
                       href={`/contributors/${answer.user.id}`}

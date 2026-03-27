@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import AvatarUpload from "./AvatarUpload";
 
 type ProfileData = {
   name: string;
@@ -15,9 +16,11 @@ type ProfileData = {
 
 export default function ProfileEditForm({
   userId,
+  currentImage,
   initialData,
 }: {
   userId: string;
+  currentImage?: string | null;
   initialData: ProfileData;
 }) {
   const router = useRouter();
@@ -52,6 +55,11 @@ export default function ProfileEditForm({
 
   return (
     <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
+      <div>
+        <p className="text-sm font-medium text-gray-700 mb-2">プロフィール画像</p>
+        <AvatarUpload userId={userId} currentImage={currentImage} name={form.name} />
+      </div>
+
       <Field label="表示名" required>
         <input
           name="name"

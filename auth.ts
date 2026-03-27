@@ -84,20 +84,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // OAuthユーザーはadapterがroleを返さないため、常にDBから取得する
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { role: true },
+          select: { role: true, image: true },
         });
         token.role = dbUser?.role ?? user.role ?? "guest";
+        token.picture = dbUser?.image ?? token.picture ?? null;
         return token;
       }
 
-      // 以降のリクエストでDBからroleを再取得（DBで変更した場合に反映される）
+      // 以降のリクエストでDBからroleとimageを再取得
       if (token.id) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { role: true },
+          select: { role: true, image: true },
         });
         if (dbUser) {
           token.role = dbUser.role;
+          token.picture = dbUser.image ?? token.picture ?? null;
         }
       }
 
@@ -108,6 +110,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = (token.role as string) ?? "guest";
+        session.user.image = (token.picture as string | null) ?? null;
       }
       return session;
     },

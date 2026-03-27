@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import Avatar from "@/app/components/Avatar";
 
 const ROLE_LABELS: Record<string, { label: string; color: string }> = {
   admin: { label: "管理者", color: "bg-red-100 text-red-700" },
@@ -57,18 +58,7 @@ export default async function ContributorPage({
       <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
-            {user.image ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={user.image}
-                alt={user.name ?? ""}
-                className="w-16 h-16 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-16 h-16 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-2xl font-bold">
-                {(user.name ?? "?")[0]}
-              </div>
-            )}
+            <Avatar src={user.image} name={user.name} size="lg" />
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl font-bold text-gray-900">{user.name ?? "名無し"}</h1>

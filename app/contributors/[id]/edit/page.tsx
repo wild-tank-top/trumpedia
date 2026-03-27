@@ -19,7 +19,7 @@ export default async function EditProfilePage({
 
   const user = await prisma.user.findUnique({
     where: { id },
-    select: { id: true, name: true, profile: true },
+    select: { id: true, name: true, image: true, profile: true },
   });
 
   if (!user) notFound();
@@ -29,6 +29,7 @@ export default async function EditProfilePage({
       <h1 className="text-2xl font-bold text-gray-900 mb-6">プロフィール編集</h1>
       <ProfileEditForm
         userId={id}
+        currentImage={user.image}
         initialData={{
           name: user.name ?? "",
           bio: user.profile?.bio ?? "",

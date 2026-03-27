@@ -3,6 +3,7 @@
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import type { Session } from "next-auth";
+import Avatar from "@/app/components/Avatar";
 
 const ROLE_LABELS: Record<string, { label: string; color: string }> = {
   admin: { label: "管理者", color: "bg-red-100 text-red-700" },
@@ -46,9 +47,12 @@ export default function HeaderNav({ session }: { session: Session | null }) {
         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badge.color}`}>
           {badge.label}
         </span>
-        <span className="text-sm text-gray-700 hidden sm:inline">
-          {session.user.name}
-        </span>
+        <Link href={`/contributors/${session.user.id}`} className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
+          <Avatar src={session.user.image} name={session.user.name} size="sm" />
+          <span className="text-sm text-gray-700 hidden sm:inline">
+            {session.user.name}
+          </span>
+        </Link>
         <button
           onClick={() => signOut({ callbackUrl: "/" })}
           className="text-xs text-gray-400 hover:text-gray-700 transition-colors"
