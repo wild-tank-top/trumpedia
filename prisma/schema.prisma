@@ -85,6 +85,7 @@ model Question {
   category  String
   level     String
   status    String   @default("pending") // pending / approved / rejected
+  views     Int      @default(0)         // 閲覧数（imp）
   userId    String?  // 投稿者ID
   createdAt DateTime @default(now())
 
