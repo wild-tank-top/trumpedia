@@ -52,8 +52,8 @@ export default async function HomePage({
             </p>
           </div>
           <div className="flex items-center gap-4 hidden sm:flex">
-            <Link href="/users" className="text-sm text-teal-600 hover:underline">
-              ユーザー一覧 →
+            <Link href="/fellows" className="text-sm text-teal-600 hover:underline">
+              Fellows →
             </Link>
             <Link href="/contributors" className="text-sm text-gray-400 hover:underline">
               回答者一覧 →

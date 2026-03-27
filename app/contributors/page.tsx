@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import Avatar from "@/app/components/Avatar";
 
 export const dynamic = "force-dynamic";
 
@@ -9,9 +10,11 @@ const ROLE_LABELS: Record<string, { label: string; color: string }> = {
 };
 
 export default async function ContributorsPage() {
-  // 1件以上回答したユーザーを name 昇順（50音順）で取得
+  // fellow・admin かつ 1件以上回答したユーザーを name 昇順（50音順）で取得
+  // guest / 一般ユーザーは role フィルタで除外する
   const contributors = await prisma.user.findMany({
     where: {
+      role: { in: ["fellow", "admin"] },
       answers: { some: {} },
     },
     orderBy: { name: "asc" },
@@ -50,19 +53,7 @@ export default async function ContributorsPage() {
                 href={`/contributors/${user.id}`}
                 className="bg-white rounded-xl border border-gray-200 p-4 hover:border-amber-300 hover:shadow-sm transition-all flex items-center gap-4"
               >
-                {/* アバター */}
-                {user.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={user.image}
-                    alt={user.name ?? ""}
-                    className="w-12 h-12 rounded-full object-cover shrink-0"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-lg font-bold shrink-0">
-                    {(user.name ?? "?")[0]}
-                  </div>
-                )}
+                <Avatar src={user.image} name={user.name} size="md" />
 
                 {/* 情報 */}
                 <div className="flex-1 min-w-0">
