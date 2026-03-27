@@ -35,6 +35,11 @@ export default async function QuestionDetailPage({
   const isOwner = session?.user.id != null && session?.user.id === question.userId;
   const canEdit = isOwner || session?.user.role === "admin";
 
+  // ログイン中ユーザーの既存回答を検出
+  const myExistingAnswer = session?.user.id
+    ? question.answers.find((a) => a.userId === session.user.id) ?? null
+    : null;
+
   if (question.status !== "approved" && session?.user.role !== "admin" && !isOwner) {
     notFound();
   }
@@ -131,8 +136,10 @@ export default async function QuestionDetailPage({
 
       {/* 回答フォーム */}
       <div className="bg-white rounded-xl border border-gray-200 p-5">
-        <h3 className="text-base font-bold text-gray-800 mb-4">回答を投稿する</h3>
-        <AnswerForm questionId={question.id} session={session} />
+        <h3 className="text-base font-bold text-gray-800 mb-4">
+          {myExistingAnswer ? "回答を編集する" : "回答を投稿する"}
+        </h3>
+        <AnswerForm questionId={question.id} session={session} existingAnswer={myExistingAnswer} />
       </div>
     </div>
   );
