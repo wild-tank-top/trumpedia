@@ -68,6 +68,7 @@ model VerificationToken {
 model Profile {
   id        Int    @id @default(autoincrement())
   userId    String @unique
+  yomi      String @default("")  // 名前のよみ（ひらがな）— 50音順ソート・フィルタに使用
   bio       String @default("")
   career    String @default("")
   twitter   String @default("")

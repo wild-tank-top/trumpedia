@@ -6,6 +6,7 @@ import AvatarUpload from "./AvatarUpload";
 
 type ProfileData = {
   name: string;
+  yomi: string;
   bio: string;
   career: string;
   twitter: string;
@@ -66,6 +67,16 @@ export default function ProfileEditForm({
           value={form.name}
           onChange={handleChange}
           required
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+        />
+      </Field>
+
+      <Field label="よみ（ひらがな）" hint="50音順フィルターに使用されます（例：やまだたろう）">
+        <input
+          name="yomi"
+          value={form.yomi}
+          onChange={handleChange}
+          placeholder="ひらがなで入力"
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
         />
       </Field>

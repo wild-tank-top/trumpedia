@@ -32,6 +32,7 @@ export default async function EditProfilePage({
         currentImage={user.image}
         initialData={{
           name: user.name ?? "",
+          yomi: user.profile?.yomi ?? "",
           bio: user.profile?.bio ?? "",
           career: user.profile?.career ?? "",
           twitter: user.profile?.twitter ?? "",

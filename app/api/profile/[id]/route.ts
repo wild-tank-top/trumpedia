@@ -47,7 +47,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
   }
 
   const body = await req.json();
-  const { name, bio, career, twitter, youtube, instagram, website } = body;
+  const { name, yomi, bio, career, twitter, youtube, instagram, website } = body;
 
   // URLフィールドのバリデーション
   const urlFields: { value: string | undefined; label: string }[] = [
@@ -73,6 +73,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
       where: { userId: id },
       create: {
         userId: id,
+        yomi: yomi?.trim() ?? "",
         bio: bio ?? "",
         career: career ?? "",
         twitter: twitter ?? "",
@@ -81,6 +82,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
         website: website ?? "",
       },
       update: {
+        yomi: yomi?.trim() ?? "",
         bio: bio ?? "",
         career: career ?? "",
         twitter: twitter ?? "",
