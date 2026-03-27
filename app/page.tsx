@@ -55,9 +55,6 @@ export default async function HomePage({
             <Link href="/fellows" className="text-sm text-teal-600 hover:underline">
               Fellows →
             </Link>
-            <Link href="/contributors" className="text-sm text-gray-400 hover:underline">
-              回答者一覧 →
-            </Link>
           </div>
         </div>
       </div>
