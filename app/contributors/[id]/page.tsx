@@ -5,7 +5,7 @@ import { auth } from "@/auth";
 
 const ROLE_LABELS: Record<string, { label: string; color: string }> = {
   admin: { label: "管理者", color: "bg-red-100 text-red-700" },
-  pro:   { label: "Pro",    color: "bg-amber-100 text-amber-700" },
+  fellow: { label: "Fellow", color: "bg-amber-100 text-amber-700" },
   guest: { label: "ゲスト", color: "bg-gray-100 text-gray-500" },
 };
 

@@ -12,9 +12,14 @@ export async function GET() {
   return NextResponse.json(questions);
 }
 
-// POST /api/questions - 質問投稿（ログイン推奨、pendingで登録）
+// POST /api/questions - 質問投稿（guest以上のログインユーザーのみ）
 export async function POST(req: NextRequest) {
   const session = await auth();
+
+  if (!session?.user.id) {
+    return NextResponse.json({ error: "ログインが必要です" }, { status: 401 });
+  }
+
   const body = await req.json();
   const { title, category, level, content } = body;
 
@@ -29,7 +34,7 @@ export async function POST(req: NextRequest) {
       level,
       content,
       status: "pending",
-      userId: session?.user.id ?? null,
+      userId: session.user.id,
     },
   });
   return NextResponse.json(question, { status: 201 });

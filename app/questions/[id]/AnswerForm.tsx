@@ -29,12 +29,12 @@ export default function AnswerForm({
     );
   }
 
-  // Proでない
-  if (session.user?.role !== "pro" && session.user?.role !== "admin") {
+  // Fellowでない
+  if (session.user?.role !== "fellow" && session.user?.role !== "admin") {
     return (
       <div className="text-center py-6 text-gray-500">
-        <p className="text-sm">回答の投稿は <span className="font-semibold text-teal-600">Proユーザー</span> のみ可能です。</p>
-        <p className="text-xs mt-1 text-gray-400">管理者にProロールの付与を依頼してください。</p>
+        <p className="text-sm">回答の投稿は <span className="font-semibold text-teal-600">Fellowユーザー</span> のみ可能です。</p>
+        <p className="text-xs mt-1 text-gray-400">管理者にFellowロールの付与を依頼してください。</p>
       </div>
     );
   }

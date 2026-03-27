@@ -16,7 +16,7 @@ model User {
   emailVerified DateTime?
   image         String?
   password      String?           // Credentials認証用（ハッシュ済み）
-  role          String    @default("guest") // guest / pro / admin
+  role          String    @default("guest") // guest / fellow / admin
   createdAt     DateTime  @default(now())
 
   accounts  Account[]

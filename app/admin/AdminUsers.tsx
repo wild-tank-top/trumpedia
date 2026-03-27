@@ -14,7 +14,7 @@ type User = {
 
 const ROLES = [
   { value: "guest", label: "ゲスト",  color: "bg-gray-100 text-gray-600" },
-  { value: "pro",   label: "Pro",     color: "bg-amber-100 text-amber-700" },
+  { value: "fellow", label: "Fellow",  color: "bg-amber-100 text-amber-700" },
   { value: "admin", label: "管理者",  color: "bg-red-100 text-red-700" },
 ] as const;
 

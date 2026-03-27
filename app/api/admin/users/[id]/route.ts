@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
-const VALID_ROLES = ["guest", "pro", "admin"] as const;
+const VALID_ROLES = ["guest", "fellow", "admin"] as const;
 type Role = (typeof VALID_ROLES)[number];
 
 // PATCH /api/admin/users/[id] - ロール変更（adminのみ）

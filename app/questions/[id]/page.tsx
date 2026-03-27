@@ -32,12 +32,12 @@ export default async function QuestionDetailPage({
 
   if (!question) notFound();
 
-  if (question.status !== "approved" && session?.user.role !== "admin") {
+  const isOwner = session?.user.id != null && session?.user.id === question.userId;
+  const canEdit = isOwner || session?.user.role === "admin";
+
+  if (question.status !== "approved" && session?.user.role !== "admin" && !isOwner) {
     notFound();
   }
-
-  const isOwner = session?.user.id === question.userId;
-  const canEdit = isOwner || session?.user.role === "admin";
 
   return (
     <div>

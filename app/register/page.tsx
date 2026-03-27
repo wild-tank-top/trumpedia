@@ -89,7 +89,7 @@ export default function RegisterPage() {
       </form>
 
       <p className="text-xs text-gray-400 text-center mt-6">
-        登録後、管理者がproロールを付与するまでは回答できません。
+        登録後、管理者がfellowロールを付与するまでは回答できません。
       </p>
     </div>
   );

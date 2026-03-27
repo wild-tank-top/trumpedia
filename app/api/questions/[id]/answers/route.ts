@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
-// POST /api/questions/[id]/answers - 回答投稿（proロール以上のみ）
+// POST /api/questions/[id]/answers - 回答投稿（fellowロール以上のみ）
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -12,8 +12,8 @@ export async function POST(
   if (!session) {
     return NextResponse.json({ error: "ログインが必要です" }, { status: 401 });
   }
-  if (session.user.role !== "pro" && session.user.role !== "admin") {
-    return NextResponse.json({ error: "回答はProユーザーのみ可能です" }, { status: 403 });
+  if (session.user.role !== "fellow" && session.user.role !== "admin") {
+    return NextResponse.json({ error: "回答はFellowユーザーのみ可能です" }, { status: 403 });
   }
 
   const { id } = await params;

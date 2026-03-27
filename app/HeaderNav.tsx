@@ -6,7 +6,7 @@ import type { Session } from "next-auth";
 
 const ROLE_LABELS: Record<string, { label: string; color: string }> = {
   admin: { label: "管理者", color: "bg-red-100 text-red-700" },
-  pro:   { label: "Pro",    color: "bg-amber-100 text-amber-700" },
+  fellow: { label: "Fellow", color: "bg-amber-100 text-amber-700" },
   guest: { label: "ゲスト", color: "bg-gray-100 text-gray-500" },
 };
 
@@ -14,12 +14,6 @@ export default function HeaderNav({ session }: { session: Session | null }) {
   if (!session) {
     return (
       <div className="flex items-center gap-3">
-        <Link
-          href="/questions/new"
-          className="text-sm bg-teal-600 hover:bg-teal-700 text-white px-4 py-1.5 rounded-full transition-colors"
-        >
-          質問を投稿
-        </Link>
         <Link
           href="/login"
           className="text-sm text-gray-600 hover:text-teal-600 transition-colors"

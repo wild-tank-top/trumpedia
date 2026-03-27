@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { CATEGORIES } from "@/lib/constants";
 
 type FormData = {
@@ -19,10 +20,21 @@ const LEVELS = [
 
 export default function NewQuestionPage() {
   const router = useRouter();
+  const { status } = useSession();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [pendingData, setPendingData] = useState<FormData | null>(null);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/login");
+    }
+  }, [status, router]);
+
+  if (status === "loading" || status === "unauthenticated") {
+    return null;
+  }
 
   function handlePrepare(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
