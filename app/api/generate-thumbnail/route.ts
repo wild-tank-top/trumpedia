@@ -74,6 +74,9 @@ export async function POST(req: NextRequest) {
       response_format: "url",
     });
 
+    if (!response.data || response.data.length === 0) {
+      throw new Error("No data in response");
+    }
     const imageUrl = response.data[0]?.url;
     if (!imageUrl) {
       throw new Error("No image URL in response");
