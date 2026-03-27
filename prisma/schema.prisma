@@ -86,10 +86,9 @@ model Question {
   level     String
   status    String   @default("pending") // pending / approved / rejected
   views     Int      @default(0)         // 閲覧数（imp）
+  thumbnail String?                      // AIサムネイル画像URL
   userId    String?  // 投稿者ID
   createdAt DateTime @default(now())
-
-  // TODO: AIでサムネイル自動生成を追加予定
 
   answers Answer[]
   user    User?    @relation(fields: [userId], references: [id])

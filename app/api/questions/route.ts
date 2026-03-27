@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { title, category, level, content } = body;
+  const { title, category, level, content, thumbnail } = body;
 
   if (!title || !category || !level || !content) {
     return NextResponse.json({ error: "必須項目が不足しています" }, { status: 400 });
@@ -35,6 +35,7 @@ export async function POST(req: NextRequest) {
       content,
       status: "pending",
       userId: session.user.id,
+      ...(thumbnail ? { thumbnail: String(thumbnail) } : {}),
     },
   });
   return NextResponse.json(question, { status: 201 });

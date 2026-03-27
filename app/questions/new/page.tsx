@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { CATEGORIES } from "@/lib/constants";
+import ThumbnailGenerator from "./ThumbnailGenerator";
 
 type FormData = {
   title: string;
   category: string;
   level: string;
   content: string;
+  thumbnail: string | null;
 };
 
 const LEVELS = [
@@ -21,10 +23,12 @@ const LEVELS = [
 export default function NewQuestionPage() {
   const router = useRouter();
   const { status } = useSession();
+  const formRef = useRef<HTMLFormElement>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [pendingData, setPendingData] = useState<FormData | null>(null);
+  const [selectedThumbnail, setSelectedThumbnail] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -34,6 +38,14 @@ export default function NewQuestionPage() {
 
   if (status === "loading" || status === "unauthenticated") {
     return null;
+  }
+
+  function getFormValues() {
+    const form = formRef.current;
+    if (!form) return { title: "", category: "" };
+    const get = (name: string) =>
+      (form.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement | null)?.value ?? "";
+    return { title: get("title"), category: get("category") };
   }
 
   function handlePrepare(e: React.FormEvent<HTMLFormElement>) {
@@ -47,6 +59,7 @@ export default function NewQuestionPage() {
       category: get("category"),
       level: get("level"),
       content: get("content"),
+      thumbnail: selectedThumbnail,
     });
     setError("");
     setShowModal(true);
@@ -66,7 +79,6 @@ export default function NewQuestionPage() {
 
       if (res.ok) {
         const question = await res.json();
-        // router.push 後は loading = true のまま維持（遷移完了まで二重送信防止）
         router.push(`/questions/${question.id}`);
       } else {
         const json = await res.json().catch(() => ({}));
@@ -89,7 +101,7 @@ export default function NewQuestionPage() {
         疑問・悩みをできるだけ具体的に書くと、より良い回答が集まります。
       </p>
 
-      <form onSubmit={handlePrepare} className="space-y-6">
+      <form ref={formRef} onSubmit={handlePrepare} className="space-y-6">
         <Field label="タイトル" required hint="質問文そのものを書いてください（10文字以上推奨）">
           <input
             name="title"
@@ -139,6 +151,14 @@ export default function NewQuestionPage() {
           />
         </Field>
 
+        {/* サムネイル生成 */}
+        <Field label="サムネイル画像" hint="タイトルをもとにAIが画像を生成します（任意）">
+          <ThumbnailGenerator
+            getFormValues={getFormValues}
+            onSelect={setSelectedThumbnail}
+          />
+        </Field>
+
         <div className="flex gap-3 pt-2">
           <button
             type="button"
@@ -164,11 +184,23 @@ export default function NewQuestionPage() {
             <p className="text-sm text-gray-500 mb-4">この内容で質問を投稿しますか？</p>
 
             <div className="bg-gray-50 rounded-lg p-4 mb-5 space-y-2">
+              {/* サムネイルプレビュー（選択済みの場合） */}
+              {pendingData.thumbnail && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={pendingData.thumbnail}
+                  alt="サムネイル"
+                  className="w-full rounded-lg object-cover aspect-video mb-3"
+                />
+              )}
               <p className="text-sm font-medium text-gray-900 line-clamp-2">{pendingData.title}</p>
               <p className="text-xs text-gray-400">
                 {pendingData.category}　／　{LEVELS.find(l => l.value === pendingData.level)?.label ?? pendingData.level}
               </p>
               <p className="text-xs text-gray-500 line-clamp-3 leading-relaxed">{pendingData.content}</p>
+              {!pendingData.thumbnail && (
+                <p className="text-xs text-gray-400 italic">サムネイルなし</p>
+              )}
             </div>
 
             {error && <p className="text-red-500 text-sm mb-3">{error}</p>}

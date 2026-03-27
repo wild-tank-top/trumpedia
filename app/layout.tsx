@@ -3,6 +3,7 @@ import "./globals.css";
 import { auth } from "@/auth";
 import HeaderNav from "./HeaderNav";
 import Providers from "./providers";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,19 @@ export default async function RootLayout({
         <main className="max-w-3xl mx-auto px-4 py-6">
           <Providers>{children}</Providers>
         </main>
+        <footer className="border-t border-gray-200 mt-12">
+          <div className="max-w-3xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-xs text-gray-400">© 2026 Trumpedia</p>
+            <nav className="flex items-center gap-4">
+              <Link href="/terms" className="text-xs text-gray-400 hover:text-teal-600 transition-colors">
+                利用規約
+              </Link>
+              <Link href="/privacy" className="text-xs text-gray-400 hover:text-teal-600 transition-colors">
+                プライバシーポリシー
+              </Link>
+            </nav>
+          </div>
+        </footer>
       </body>
     </html>
   );

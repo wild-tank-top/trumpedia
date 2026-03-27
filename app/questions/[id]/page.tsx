@@ -101,6 +101,15 @@ export default async function QuestionDetailPage({
 
       {/* 質問カード */}
       <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
+        {/* サムネイル */}
+        {question.thumbnail && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={question.thumbnail}
+            alt={question.title}
+            className="w-full rounded-lg object-cover aspect-video mb-4"
+          />
+        )}
         <div className="flex flex-wrap gap-2 mb-3">
           <span className="text-xs bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full">
             {question.category}
