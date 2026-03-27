@@ -44,12 +44,14 @@ export default async function HomePage({
               トランペット奏者の知見・思考プロセスを蓄積しています
             </p>
           </div>
-          <Link
-            href="/contributors"
-            className="text-sm text-teal-600 hover:underline hidden sm:block"
-          >
-            回答者一覧 →
-          </Link>
+          <div className="flex items-center gap-4 hidden sm:flex">
+            <Link href="/users" className="text-sm text-teal-600 hover:underline">
+              ユーザー一覧 →
+            </Link>
+            <Link href="/contributors" className="text-sm text-gray-400 hover:underline">
+              回答者一覧 →
+            </Link>
+          </div>
         </div>
       </div>
 

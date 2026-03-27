@@ -24,6 +24,7 @@ model User {
   answers   Answer[]
   profile   Profile?
   questions Question[]
+  likes     Like[]
 }
 
 model Account {
@@ -108,4 +109,17 @@ model Answer {
 
   question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
   user     User     @relation(fields: [userId], references: [id])
+  likes    Like[]
+}
+
+model Like {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  answerId  Int
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answer Answer @relation(fields: [answerId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, answerId])
 }

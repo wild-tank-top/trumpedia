@@ -4,6 +4,12 @@ import { prisma } from "@/lib/prisma";
 import type { Answer } from "@prisma/client";
 import { auth } from "@/auth";
 import AnswerForm from "./AnswerForm";
+import LikeButton from "./LikeButton";
+
+type AnswerWithMeta = Answer & {
+  user: { name: string | null; id: string };
+  _count: { likes: number };
+};
 
 const LEVEL_LABELS: Record<string, string> = {
   beginner: "初級",
@@ -23,7 +29,10 @@ export default async function QuestionDetailPage({
       include: {
         answers: {
           orderBy: { createdAt: "asc" },
-          include: { user: { select: { name: true, id: true } } },
+          include: {
+            user: { select: { name: true, id: true } },
+            _count: { select: { likes: true } },
+          },
         },
       },
     }),
@@ -39,6 +48,21 @@ export default async function QuestionDetailPage({
   const myExistingAnswer = session?.user.id
     ? question.answers.find((a) => a.userId === session.user.id) ?? null
     : null;
+
+  // ログイン中ユーザーがいいねしている回答IDセット
+  const myLikedAnswerIds = session?.user.id
+    ? new Set(
+        (
+          await prisma.like.findMany({
+            where: {
+              userId: session.user.id,
+              answerId: { in: question.answers.map((a) => a.id) },
+            },
+            select: { answerId: true },
+          })
+        ).map((l) => l.answerId)
+      )
+    : new Set<number>();
 
   if (question.status !== "approved" && session?.user.role !== "admin" && !isOwner) {
     notFound();
@@ -103,21 +127,29 @@ export default async function QuestionDetailPage({
         </div>
       ) : (
         <div className="space-y-4 mb-8">
-          {question.answers.map((answer: Answer & { user: { name: string | null; id: string } }) => (
+          {question.answers.map((answer: AnswerWithMeta) => (
             <div key={answer.id} className="bg-white rounded-xl border border-gray-200 p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-teal-100 text-teal-700 rounded-full flex items-center justify-center text-sm font-bold shrink-0">
-                  {(answer.user.name ?? "?")[0]}
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-teal-100 text-teal-700 rounded-full flex items-center justify-center text-sm font-bold shrink-0">
+                    {(answer.user.name ?? "?")[0]}
+                  </div>
+                  <div>
+                    <Link
+                      href={`/contributors/${answer.user.id}`}
+                      className="font-medium text-sm text-gray-900 hover:text-teal-600"
+                    >
+                      {answer.user.name ?? "名無し"}
+                    </Link>
+                    <p className="text-xs text-gray-400">{new Date(answer.createdAt).toLocaleDateString("ja-JP")}</p>
+                  </div>
                 </div>
-                <div>
-                  <Link
-                    href={`/contributors/${answer.user.id}`}
-                    className="font-medium text-sm text-gray-900 hover:text-teal-600"
-                  >
-                    {answer.user.name ?? "名無し"}
-                  </Link>
-                  <p className="text-xs text-gray-400">{new Date(answer.createdAt).toLocaleDateString("ja-JP")}</p>
-                </div>
+                <LikeButton
+                  answerId={answer.id}
+                  initialCount={answer._count.likes}
+                  initialLiked={myLikedAnswerIds.has(answer.id)}
+                  isLoggedIn={!!session}
+                />
               </div>
 
               <div className="space-y-3 text-sm">
