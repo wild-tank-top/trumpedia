@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import HeaderNav from "./HeaderNav";
 import Providers from "./providers";
 import Link from "next/link";
@@ -19,6 +20,12 @@ export default async function RootLayout({
 }) {
   const session = await auth();
 
+  const unreadCount = session?.user.id
+    ? await prisma.notification
+        .count({ where: { userId: session.user.id, isRead: false } })
+        .catch(() => 0)
+    : 0;
+
   return (
     <html lang="ja">
       <body className="bg-gray-50 text-gray-800 min-h-screen">
@@ -27,7 +34,7 @@ export default async function RootLayout({
             <a href="/" className="text-xl font-bold text-amber-600 tracking-tight shrink-0">
               🎺 Trumpedia
             </a>
-            <HeaderNav session={session} />
+            <HeaderNav session={session} unreadCount={unreadCount} />
           </div>
         </header>
         <main className="max-w-3xl mx-auto px-4 py-6">

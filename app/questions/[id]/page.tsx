@@ -7,6 +7,8 @@ import AnswerForm from "./AnswerForm";
 import LikeButton from "./LikeButton";
 import DeleteAnswerButton from "./DeleteAnswerButton";
 import DeleteQuestionButton from "./DeleteQuestionButton";
+import SupplementForm from "./SupplementForm";
+import NotificationReader from "./NotificationReader";
 import ViewTracker from "./ViewTracker";
 import Avatar from "@/app/components/Avatar";
 
@@ -45,6 +47,7 @@ export default async function QuestionDetailPage({
             _count: { select: { likes: true } },
           },
         },
+        supplements: { orderBy: { createdAt: "asc" } },
       },
     });
   } catch (err) {
@@ -56,6 +59,7 @@ export default async function QuestionDetailPage({
 
   const isOwner = session?.user.id != null && session?.user.id === question.userId;
   const canEdit = isOwner || session?.user.role === "admin";
+  const isLocked = question.answers.length > 0; // 回答があると質問本文は編集不可
 
   // ログイン中ユーザーの既存回答を検出
   const myExistingAnswer = session?.user.id
@@ -90,12 +94,21 @@ export default async function QuestionDetailPage({
         </div>
         {canEdit && (
           <div className="flex items-center gap-2 shrink-0">
-            <Link
-              href={`/questions/${question.id}/edit`}
-              className="text-sm text-teal-600 hover:text-teal-700 border border-teal-200 px-3 py-1 rounded-lg transition-colors"
-            >
-              編集
-            </Link>
+            {isLocked ? (
+              <span
+                title="回答があるため編集できません"
+                className="text-xs text-gray-400 border border-gray-200 px-3 py-1 rounded-lg cursor-not-allowed select-none"
+              >
+                編集不可
+              </span>
+            ) : (
+              <Link
+                href={`/questions/${question.id}/edit`}
+                className="text-sm text-teal-600 hover:text-teal-700 border border-teal-200 px-3 py-1 rounded-lg transition-colors"
+              >
+                編集
+              </Link>
+            )}
             <DeleteQuestionButton questionId={question.id} />
           </div>
         )}
@@ -149,6 +162,36 @@ export default async function QuestionDetailPage({
           </div>
         </div>
       </div>
+
+      {/* 補足一覧 */}
+      {question.supplements.length > 0 && (
+        <div className="space-y-2 mb-6">
+          {question.supplements.map((s) => (
+            <div key={s.id} className="bg-teal-50 border-l-4 border-teal-400 rounded-r-xl p-4">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-xs font-bold text-teal-700 bg-teal-100 px-2 py-0.5 rounded">補足</span>
+                <span className="text-xs text-gray-400">
+                  {new Date(s.createdAt).toLocaleDateString("ja-JP", { year: "numeric", month: "short", day: "numeric" })}
+                </span>
+              </div>
+              <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{s.content}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 補足フォーム（質問者のみ） */}
+      {isOwner && (
+        <div className="mb-6 bg-white rounded-xl border border-gray-200 p-4">
+          <p className="text-xs text-gray-400 mb-2">
+            回答後に追加情報がある場合は補足として投稿できます（回答者全員に通知されます）
+          </p>
+          <SupplementForm questionId={question.id} />
+        </div>
+      )}
+
+      {/* 通知既読化（回答者がページを開いたら自動で既読） */}
+      {session && <NotificationReader questionId={question.id} />}
 
       {/* 回答一覧 */}
       <h2 className="text-lg font-bold text-gray-800 mb-3">

@@ -19,7 +19,13 @@ const ROLE_LABELS = {
 
 type Role = keyof typeof ROLE_LABELS;
 
-export default function HeaderNav({ session }: { session: Session | null }) {
+export default function HeaderNav({
+  session,
+  unreadCount = 0,
+}: {
+  session: Session | null;
+  unreadCount?: number;
+}) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -71,13 +77,18 @@ export default function HeaderNav({ session }: { session: Session | null }) {
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badge.color}`}>
                 {badge.label}
               </span>
-              <Link
-                href={`/contributors/${session.user.id}`}
-                className="hover:opacity-80 transition-opacity"
-                title={session.user.name ?? "プロフィール"}
-              >
-                <Avatar src={session.user.image} name={session.user.name} size="sm" />
-              </Link>
+              <div className="relative">
+                <Link
+                  href={`/contributors/${session.user.id}`}
+                  className="hover:opacity-80 transition-opacity block"
+                  title={session.user.name ?? "プロフィール"}
+                >
+                  <Avatar src={session.user.image} name={session.user.name} size="sm" />
+                </Link>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
+                )}
+              </div>
               <span className="text-sm text-gray-700 hidden md:inline max-w-[100px] truncate">
                 {session.user.name}
               </span>
@@ -100,14 +111,19 @@ export default function HeaderNav({ session }: { session: Session | null }) {
       </nav>
 
       {/* ══ モバイル：ハンバーガーボタン（sm 未満で表示） ═══ */}
-      <button
-        onClick={() => setOpen((o) => !o)}
-        aria-label={open ? "メニューを閉じる" : "メニューを開く"}
-        aria-expanded={open}
-        className="sm:hidden w-10 h-10 flex items-center justify-center rounded-xl text-gray-600 hover:bg-gray-100 active:bg-gray-200 transition-colors"
-      >
-        {open ? <X size={22} strokeWidth={2} /> : <Menu size={22} strokeWidth={2} />}
-      </button>
+      <div className="sm:hidden relative">
+        <button
+          onClick={() => setOpen((o) => !o)}
+          aria-label={open ? "メニューを閉じる" : "メニューを開く"}
+          aria-expanded={open}
+          className="w-10 h-10 flex items-center justify-center rounded-xl text-gray-600 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+        >
+          {open ? <X size={22} strokeWidth={2} /> : <Menu size={22} strokeWidth={2} />}
+        </button>
+        {unreadCount > 0 && !open && (
+          <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white pointer-events-none" />
+        )}
+      </div>
 
       {/* ══ モバイルメニュー：backdrop ════════════════════════ */}
       {open && (

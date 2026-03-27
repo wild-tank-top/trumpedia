@@ -39,6 +39,15 @@ export async function PUT(
     return NextResponse.json({ error: "権限なし" }, { status: 403 });
   }
 
+  // 回答がある質問は title / content の編集を禁止
+  const answerCount = await prisma.answer.count({ where: { questionId: Number(id) } });
+  if (answerCount > 0) {
+    return NextResponse.json(
+      { error: "回答が付いている質問は編集できません。補足機能をご利用ください。" },
+      { status: 403 }
+    );
+  }
+
   const body = await req.json();
   const { title, category, level, content } = body;
 
