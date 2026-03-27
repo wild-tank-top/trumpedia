@@ -15,7 +15,7 @@ declare module "next-auth" {
     } & DefaultSession["user"];
   }
   interface User {
-    role: string;
+    role?: string;
   }
 }
 
@@ -26,15 +26,8 @@ const googleProvider =
     ? Google({
         clientId: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        profile(profile) {
-          return {
-            id: profile.sub,
-            name: profile.name,
-            email: profile.email,
-            image: profile.picture,
-            role: "guest",
-          };
-        },
+        // 既存メールアドレス（Credentials登録済み）との自動連携を許可
+        allowDangerousEmailAccountLinking: true,
       })
     : null;
 
@@ -84,11 +77,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
 
   callbacks: {
+    // 初回ログイン時のみuserオブジェクトが渡される
     async jwt({ token, user }) {
-      // 初回ログイン時のみuserオブジェクトが渡される
-      if (user) {
+      if (user?.id) {
         token.id = user.id;
-        token.role = user.role ?? "guest";
+        // OAuthユーザーはadapterがroleを返さないため、常にDBから取得する
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { role: true },
+        });
+        token.role = dbUser?.role ?? user.role ?? "guest";
         return token;
       }
 
