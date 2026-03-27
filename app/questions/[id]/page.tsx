@@ -47,7 +47,6 @@ export default async function QuestionDetailPage({
             _count: { select: { likes: true } },
           },
         },
-        supplements: { orderBy: { createdAt: "asc" } },
       },
     });
   } catch (err) {
@@ -56,6 +55,14 @@ export default async function QuestionDetailPage({
   }
 
   if (!question) notFound();
+
+  // QuestionSupplement テーブルが未作成の場合も空配列で継続（404 を防ぐ）
+  const supplements = await prisma.questionSupplement
+    .findMany({
+      where: { questionId: Number(id) },
+      orderBy: { createdAt: "asc" },
+    })
+    .catch(() => []);
 
   const isOwner = session?.user.id != null && session?.user.id === question.userId;
   const canEdit = isOwner || session?.user.role === "admin";
@@ -164,9 +171,9 @@ export default async function QuestionDetailPage({
       </div>
 
       {/* 補足一覧 */}
-      {question.supplements.length > 0 && (
+      {supplements.length > 0 && (
         <div className="space-y-2 mb-6">
-          {question.supplements.map((s) => (
+          {supplements.map((s) => (
             <div key={s.id} className="bg-teal-50 border-l-4 border-teal-400 rounded-r-xl p-4">
               <div className="flex items-center gap-2 mb-1.5">
                 <span className="text-xs font-bold text-teal-700 bg-teal-100 px-2 py-0.5 rounded">補足</span>
