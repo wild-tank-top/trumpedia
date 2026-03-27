@@ -52,3 +52,32 @@ export async function PUT(
   });
   return NextResponse.json(updated);
 }
+
+// DELETE /api/questions/[id] - 質問削除（投稿者 or admin のみ）
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  if (!session) {
+    return NextResponse.json({ error: "ログインが必要です" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const question = await prisma.question.findUnique({
+    where: { id: Number(id) },
+    select: { userId: true },
+  });
+
+  if (!question) {
+    return NextResponse.json({ error: "質問が見つかりません" }, { status: 404 });
+  }
+
+  if (session.user.id !== question.userId && session.user.role !== "admin") {
+    return NextResponse.json({ error: "権限がありません" }, { status: 403 });
+  }
+
+  await prisma.question.delete({ where: { id: Number(id) } });
+
+  return NextResponse.json({ ok: true });
+}

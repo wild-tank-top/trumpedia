@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import AnswerForm from "./AnswerForm";
 import LikeButton from "./LikeButton";
 import DeleteAnswerButton from "./DeleteAnswerButton";
+import DeleteQuestionButton from "./DeleteQuestionButton";
 import ViewTracker from "./ViewTracker";
 import Avatar from "@/app/components/Avatar";
 
@@ -88,12 +89,15 @@ export default async function QuestionDetailPage({
           <span className="text-gray-600 truncate">{question.title}</span>
         </div>
         {canEdit && (
-          <Link
-            href={`/questions/${question.id}/edit`}
-            className="text-sm text-teal-600 hover:text-teal-700 border border-teal-200 px-3 py-1 rounded-lg transition-colors shrink-0"
-          >
-            編集
-          </Link>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              href={`/questions/${question.id}/edit`}
+              className="text-sm text-teal-600 hover:text-teal-700 border border-teal-200 px-3 py-1 rounded-lg transition-colors"
+            >
+              編集
+            </Link>
+            <DeleteQuestionButton questionId={question.id} />
+          </div>
         )}
       </div>
 
@@ -205,7 +209,13 @@ export default async function QuestionDetailPage({
         <h3 className="text-base font-bold text-gray-800 mb-4">
           {myExistingAnswer ? "回答を編集する" : "回答を投稿する"}
         </h3>
-        <AnswerForm questionId={question.id} session={session} existingAnswer={myExistingAnswer} />
+        {/* key を answer ID で固定することで削除後に状態をリセット */}
+        <AnswerForm
+          key={myExistingAnswer?.id ?? "new"}
+          questionId={question.id}
+          session={session}
+          existingAnswer={myExistingAnswer}
+        />
       </div>
     </div>
   );
