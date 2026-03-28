@@ -87,10 +87,11 @@ model Question {
   category  String
   level     String
   status    String   @default("pending") // pending / approved / rejected
-  views     Int      @default(0)         // 閲覧数（imp）
-  thumbnail String?                      // AIサムネイル画像URL
-  userId    String?  // 投稿者ID
-  createdAt DateTime @default(now())
+  views          Int      @default(0)         // 閲覧数（imp）
+  thumbnail      String?                      // AIサムネイル画像URL
+  userId         String?  // 投稿者ID
+  createdAt      DateTime @default(now())
+  lastAnsweredAt DateTime?                    // 最新回答日（ソート用・非正規化）
 
   answers       Answer[]
   supplements   QuestionSupplement[]

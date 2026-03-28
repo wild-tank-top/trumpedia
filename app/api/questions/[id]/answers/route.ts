@@ -54,9 +54,16 @@ export async function POST(
     return NextResponse.json({ error: "必須項目が不足しています" }, { status: 400 });
   }
 
-  const answer = await prisma.answer.create({
-    data: { questionId, userId: session!.user.id, ...fields },
-  });
+  const now = new Date();
+  const [answer] = await prisma.$transaction([
+    prisma.answer.create({
+      data: { questionId, userId: session!.user.id, ...fields },
+    }),
+    prisma.question.update({
+      where: { id: questionId },
+      data: { lastAnsweredAt: now },
+    }),
+  ]);
   return NextResponse.json(answer, { status: 201 });
 }
 

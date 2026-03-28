@@ -1,23 +1,48 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import CategoryFilter from "./CategoryFilter";
+import SortControl from "./SortControl";
 import { LEVEL_LABELS, LEVEL_STYLES, DEFAULT_LEVEL_STYLE } from "@/lib/levelConfig";
+import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
+
+type SortKey = "createdAt" | "views" | "answers" | "lastAnsweredAt";
+type OrderDir = "asc" | "desc";
+
+const VALID_SORTS: SortKey[] = ["createdAt", "views", "answers", "lastAnsweredAt"];
+const VALID_ORDERS: OrderDir[] = ["asc", "desc"];
+
+function buildOrderBy(sort: SortKey, order: OrderDir): Prisma.QuestionOrderByWithRelationInput[] {
+  if (sort === "answers") {
+    return [{ answers: { _count: order } }, { createdAt: "desc" }];
+  }
+  if (sort === "lastAnsweredAt") {
+    return [{ lastAnsweredAt: { sort: order, nulls: "last" } }, { createdAt: "desc" }];
+  }
+  return [{ [sort]: order }];
+}
 
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{ category?: string; sort?: string; order?: string }>;
 }) {
-  const { category } = await searchParams;
+  const { category, sort: sortParam, order: orderParam } = await searchParams;
+
+  const sort: SortKey = VALID_SORTS.includes(sortParam as SortKey)
+    ? (sortParam as SortKey)
+    : "createdAt";
+  const order: OrderDir = VALID_ORDERS.includes(orderParam as OrderDir)
+    ? (orderParam as OrderDir)
+    : "desc";
 
   const questions = await prisma.question.findMany({
     where: {
       status: "approved",
       ...(category ? { category } : {}),
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: buildOrderBy(sort, order),
     // thumbnail は一覧では未表示のため select から除外（DBカラム依存を回避）
     select: {
       id: true,
@@ -50,6 +75,14 @@ export default async function HomePage({
 
       {/* カテゴリフィルター（Client Component） */}
       <CategoryFilter current={category} />
+
+      {/* ソートコントロール + モバイルドロワー */}
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-xs text-gray-400">
+          {questions.length}件
+        </p>
+        <SortControl currentSort={sort} currentOrder={order} />
+      </div>
 
       {questions.length === 0 ? (
         <div className="text-center py-20 text-gray-400">

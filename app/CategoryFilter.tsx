@@ -1,18 +1,21 @@
 "use client";
 
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { CATEGORIES } from "@/lib/constants";
 
 export default function CategoryFilter({ current }: { current?: string }) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   function select(cat: string | null) {
+    const params = new URLSearchParams(searchParams.toString());
     if (cat) {
-      router.push(`${pathname}?category=${encodeURIComponent(cat)}`);
+      params.set("category", cat);
     } else {
-      router.push(pathname);
+      params.delete("category");
     }
+    router.push(`${pathname}?${params.toString()}`);
   }
 
   return (
