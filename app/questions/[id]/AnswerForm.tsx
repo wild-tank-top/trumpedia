@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import type { Session } from "next-auth";
 
 type ExistingAnswer = {
@@ -32,20 +31,8 @@ export default function AnswerForm({
 
   const isEditing = !!existingAnswer;
 
-  // 未ログイン
-  if (!session) {
-    return (
-      <div className="text-center py-6 text-gray-500">
-        <p className="mb-3">回答するにはログインが必要です</p>
-        <Link
-          href="/login"
-          className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-full text-sm transition-colors"
-        >
-          ログインする
-        </Link>
-      </div>
-    );
-  }
+  // 親コンポーネントで session チェック済みだが、型安全のため null guard
+  if (!session) return null;
 
   // Fellowでない
   if (session.user?.role !== "fellow" && session.user?.role !== "admin") {

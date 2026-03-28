@@ -64,6 +64,7 @@ export default async function QuestionDetailPage({
   const canEdit = isOwner || session?.user.role === "admin";
   const isLocked = question.answers.length > 0; // 回答があると質問本文は編集不可
   const ls = LEVEL_STYLES[question.level] ?? DEFAULT_LEVEL_STYLE;
+  const isFellow = session?.user.role === "fellow" || session?.user.role === "admin";
 
   // ログイン中ユーザーの既存回答を検出
   const myExistingAnswer = session?.user.id
@@ -206,10 +207,19 @@ export default async function QuestionDetailPage({
       </h2>
 
       {question.answers.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-400 text-sm mb-6">
-          <p className="text-2xl mb-2">💬</p>
-          <p>まだ回答がありません。最初の回答を投稿しましょう！</p>
-        </div>
+        isFellow ? (
+          /* fellow / admin: 投稿を促すメッセージ */
+          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-400 text-sm mb-6">
+            <p className="text-2xl mb-2">💬</p>
+            <p>まだ回答がありません。最初の回答を投稿しましょう！</p>
+          </div>
+        ) : (
+          /* ゲスト / 未ログイン: 静かな表示のみ */
+          <div className="bg-white rounded-xl border border-gray-200 p-6 text-center text-gray-400 text-sm mb-6">
+            <p className="text-2xl mb-2">💬</p>
+            <p>まだ回答がありません</p>
+          </div>
+        )
       ) : (
         <div className="space-y-4 mb-8">
           {question.answers.map((answer: AnswerWithMeta) => (
@@ -254,19 +264,21 @@ export default async function QuestionDetailPage({
         </div>
       )}
 
-      {/* 回答フォーム */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5">
-        <h3 className="text-base font-bold text-gray-800 mb-4">
-          {myExistingAnswer ? "回答を編集する" : "回答を投稿する"}
-        </h3>
-        {/* key を answer ID で固定することで削除後に状態をリセット */}
-        <AnswerForm
-          key={myExistingAnswer?.id ?? "new"}
-          questionId={question.id}
-          session={session}
-          existingAnswer={myExistingAnswer}
-        />
-      </div>
+      {/* 回答フォーム: ログイン時のみ表示（未ログインにはログイン促進UIを出さない） */}
+      {session && (
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 className="text-base font-bold text-gray-800 mb-4">
+            {myExistingAnswer ? "回答を編集する" : "回答を投稿する"}
+          </h3>
+          {/* key を answer ID で固定することで削除後に状態をリセット */}
+          <AnswerForm
+            key={myExistingAnswer?.id ?? "new"}
+            questionId={question.id}
+            session={session}
+            existingAnswer={myExistingAnswer}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -49,7 +49,16 @@ export default function LoginPage() {
   return (
     <div className="max-w-sm mx-auto mt-10">
       <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">ログイン</h1>
-      <p className="text-sm text-gray-500 text-center mb-8">
+
+      {/* 登録メリットの訴求 */}
+      <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 mb-6 text-center">
+        <p className="text-sm text-amber-800">
+          登録すると、トランペットに関する
+          <span className="font-semibold">質問を投稿</span>できます
+        </p>
+      </div>
+
+      <p className="text-sm text-gray-500 text-center mb-6">
         アカウントをお持ちでない方は
         <Link href="/register" className="text-amber-600 hover:underline ml-1">新規登録</Link>
       </p>
