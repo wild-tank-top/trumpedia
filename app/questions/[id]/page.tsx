@@ -11,17 +11,13 @@ import SupplementForm from "./SupplementForm";
 import NotificationReader from "./NotificationReader";
 import ViewTracker from "./ViewTracker";
 import Avatar from "@/app/components/Avatar";
+import { LEVEL_LABELS, LEVEL_STYLES, DEFAULT_LEVEL_STYLE } from "@/lib/levelConfig";
 
 type AnswerWithMeta = Answer & {
   user: { name: string | null; id: string; image: string | null };
   _count: { likes: number };
 };
 
-const LEVEL_LABELS: Record<string, string> = {
-  beginner: "初級",
-  intermediate: "中級",
-  advanced: "上級",
-};
 
 export default async function QuestionDetailPage({
   params,
@@ -67,6 +63,7 @@ export default async function QuestionDetailPage({
   const isOwner = session?.user.id != null && session?.user.id === question.userId;
   const canEdit = isOwner || session?.user.role === "admin";
   const isLocked = question.answers.length > 0; // 回答があると質問本文は編集不可
+  const ls = LEVEL_STYLES[question.level] ?? DEFAULT_LEVEL_STYLE;
 
   // ログイン中ユーザーの既存回答を検出
   const myExistingAnswer = session?.user.id
@@ -131,8 +128,11 @@ export default async function QuestionDetailPage({
       {/* 閲覧カウント（マウント時1回だけAPIコール） */}
       <ViewTracker questionId={question.id} />
 
-      {/* 質問カード */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
+      {/* 質問カード（難易度に応じた背景・枠線） */}
+      <div className={`rounded-xl border p-5 mb-6 overflow-hidden ${ls.detailBg} ${ls.detailBorder}`}>
+        {/* 難易度カラーバー */}
+        <div className={`-mx-5 -mt-5 mb-4 h-1 ${ls.bar}`} />
+
         {/* サムネイル */}
         {question.thumbnail && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -143,14 +143,14 @@ export default async function QuestionDetailPage({
           />
         )}
         <div className="flex flex-wrap gap-2 mb-3">
-          <span className="text-xs bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full">
+          <span className="text-xs bg-white/70 text-gray-600 border border-gray-200 px-2 py-0.5 rounded-full">
             {question.category}
           </span>
-          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+          <span className={`text-xs px-2 py-0.5 rounded-full ${ls.badge}`}>
             {LEVEL_LABELS[question.level] ?? question.level}
           </span>
         </div>
-        <h1 className="text-xl font-bold text-gray-900 mb-4">{question.title}</h1>
+        <h1 className={`text-xl font-bold mb-4 ${ls.detailTitle}`}>{question.title}</h1>
 
         <div className="text-sm">
           <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{question.content}</p>

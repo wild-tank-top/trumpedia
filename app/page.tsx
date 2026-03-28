@@ -1,49 +1,9 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import CategoryFilter from "./CategoryFilter";
+import { LEVEL_LABELS, LEVEL_STYLES, DEFAULT_LEVEL_STYLE } from "@/lib/levelConfig";
 
 export const dynamic = "force-dynamic";
-
-const LEVEL_LABELS: Record<string, string> = {
-  beginner: "初級",
-  intermediate: "中級",
-  advanced: "上級",
-};
-
-// 難易度ごとのカードスタイル設定
-// bar: 上端アクセントライン / gradient: プレースホルダー背景 / badge: バッジ / hover: ホバーボーダー
-const LEVEL_CONFIG: Record<string, {
-  bar: string;
-  gradient: string;
-  badge: string;
-  hover: string;
-}> = {
-  beginner: {
-    bar:      "bg-teal-400",
-    gradient: "from-teal-50 via-green-50 to-teal-100",
-    badge:    "bg-teal-100 text-teal-700",
-    hover:    "hover:border-teal-300",
-  },
-  intermediate: {
-    bar:      "bg-blue-400",
-    gradient: "from-blue-50 via-sky-50 to-blue-100",
-    badge:    "bg-blue-100 text-blue-700",
-    hover:    "hover:border-blue-300",
-  },
-  advanced: {
-    bar:      "bg-amber-400",
-    gradient: "from-amber-50 via-yellow-50 to-amber-100",
-    badge:    "bg-amber-100 text-amber-700",
-    hover:    "hover:border-amber-300",
-  },
-};
-
-const DEFAULT_LEVEL_CONFIG = {
-  bar:      "bg-gray-300",
-  gradient: "from-gray-50 to-gray-100",
-  badge:    "bg-gray-100 text-gray-600",
-  hover:    "hover:border-gray-300",
-};
 
 export default async function HomePage({
   searchParams,
@@ -120,18 +80,18 @@ export default async function HomePage({
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {questions.map((q) => {
-            const cfg = LEVEL_CONFIG[q.level] ?? DEFAULT_LEVEL_CONFIG;
+            const s = LEVEL_STYLES[q.level] ?? DEFAULT_LEVEL_STYLE;
             return (
               <Link
                 key={q.id}
                 href={`/questions/${q.id}`}
-                className={`block bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md ${cfg.hover} transition-all overflow-hidden`}
+                className={`block bg-white rounded-xl border shadow-sm ${s.cardBorder} ${s.cardHover} transition-all overflow-hidden`}
               >
                 {/* 難易度カラーバー（上端） */}
-                <div className={`h-1 w-full ${cfg.bar}`} />
+                <div className={`h-1 w-full ${s.bar}`} />
 
                 {/* サムネイル / プレースホルダー */}
-                <div className={`aspect-video bg-gradient-to-br ${cfg.gradient} flex items-center justify-center`}>
+                <div className={`aspect-video bg-gradient-to-br ${s.placeholder} flex items-center justify-center`}>
                   <span className="text-3xl opacity-30">🎺</span>
                 </div>
 
@@ -140,7 +100,7 @@ export default async function HomePage({
                     <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
                       {q.category}
                     </span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${cfg.badge}`}>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${s.badge}`}>
                       {LEVEL_LABELS[q.level] ?? q.level}
                     </span>
                   </div>
