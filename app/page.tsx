@@ -10,10 +10,39 @@ const LEVEL_LABELS: Record<string, string> = {
   advanced: "上級",
 };
 
-const LEVEL_COLORS: Record<string, string> = {
-  beginner: "bg-green-100 text-green-700",
-  intermediate: "bg-blue-100 text-blue-700",
-  advanced: "bg-red-100 text-red-700",
+// 難易度ごとのカードスタイル設定
+// bar: 上端アクセントライン / gradient: プレースホルダー背景 / badge: バッジ / hover: ホバーボーダー
+const LEVEL_CONFIG: Record<string, {
+  bar: string;
+  gradient: string;
+  badge: string;
+  hover: string;
+}> = {
+  beginner: {
+    bar:      "bg-teal-400",
+    gradient: "from-teal-50 via-green-50 to-teal-100",
+    badge:    "bg-teal-100 text-teal-700",
+    hover:    "hover:border-teal-300",
+  },
+  intermediate: {
+    bar:      "bg-blue-400",
+    gradient: "from-blue-50 via-sky-50 to-blue-100",
+    badge:    "bg-blue-100 text-blue-700",
+    hover:    "hover:border-blue-300",
+  },
+  advanced: {
+    bar:      "bg-amber-400",
+    gradient: "from-amber-50 via-yellow-50 to-amber-100",
+    badge:    "bg-amber-100 text-amber-700",
+    hover:    "hover:border-amber-300",
+  },
+};
+
+const DEFAULT_LEVEL_CONFIG = {
+  bar:      "bg-gray-300",
+  gradient: "from-gray-50 to-gray-100",
+  badge:    "bg-gray-100 text-gray-600",
+  hover:    "hover:border-gray-300",
 };
 
 export default async function HomePage({
@@ -90,45 +119,47 @@ export default async function HomePage({
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {questions.map((q) => (
-            <Link
-              key={q.id}
-              href={`/questions/${q.id}`}
-              className="block bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-teal-200 transition-all"
-            >
-              {/* TODO: AIサムネイル追加後ここに表示 */}
-              <div className="aspect-video bg-gradient-to-br from-teal-50 to-gray-100 rounded-t-xl flex items-center justify-center">
-                <span className="text-3xl opacity-40">🎺</span>
-              </div>
+          {questions.map((q) => {
+            const cfg = LEVEL_CONFIG[q.level] ?? DEFAULT_LEVEL_CONFIG;
+            return (
+              <Link
+                key={q.id}
+                href={`/questions/${q.id}`}
+                className={`block bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md ${cfg.hover} transition-all overflow-hidden`}
+              >
+                {/* 難易度カラーバー（上端） */}
+                <div className={`h-1 w-full ${cfg.bar}`} />
 
-              <div className="p-4">
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  <span className="text-xs bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full">
-                    {q.category}
-                  </span>
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded-full ${
-                      LEVEL_COLORS[q.level] ?? "bg-gray-100 text-gray-600"
-                    }`}
-                  >
-                    {LEVEL_LABELS[q.level] ?? q.level}
-                  </span>
+                {/* サムネイル / プレースホルダー */}
+                <div className={`aspect-video bg-gradient-to-br ${cfg.gradient} flex items-center justify-center`}>
+                  <span className="text-3xl opacity-30">🎺</span>
                 </div>
 
-                <p className="font-semibold text-gray-900 leading-snug mb-1 line-clamp-2">
-                  {q.title}
-                </p>
-                <p className="text-xs text-gray-500 leading-relaxed line-clamp-2 mb-3">
-                  {q.content}
-                </p>
+                <div className="p-4">
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                      {q.category}
+                    </span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${cfg.badge}`}>
+                      {LEVEL_LABELS[q.level] ?? q.level}
+                    </span>
+                  </div>
 
-                <div className="flex items-center justify-between text-xs text-gray-400">
-                  <span>{new Date(q.createdAt).toLocaleDateString("ja-JP")}</span>
-                  <span>回答 {q._count.answers}件</span>
+                  <p className="font-semibold text-gray-900 leading-snug mb-1 line-clamp-2">
+                    {q.title}
+                  </p>
+                  <p className="text-xs text-gray-500 leading-relaxed line-clamp-2 mb-3">
+                    {q.content}
+                  </p>
+
+                  <div className="flex items-center justify-between text-xs text-gray-400">
+                    <span>{new Date(q.createdAt).toLocaleDateString("ja-JP")}</span>
+                    <span>回答 {q._count.answers}件</span>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>
