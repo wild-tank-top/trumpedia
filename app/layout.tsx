@@ -3,6 +3,7 @@ import "./globals.css";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import HeaderNav from "./HeaderNav";
+import NotificationBanner from "./components/NotificationBanner";
 import Providers from "./providers";
 import Link from "next/link";
 
@@ -20,11 +21,22 @@ export default async function RootLayout({
 }) {
   const session = await auth();
 
-  const unreadCount = session?.user.id
+  // 未読通知を取得（Notificationテーブル未作成時は空配列で続行）
+  const notifications = session?.user.id
     ? await prisma.notification
-        .count({ where: { userId: session.user.id, isRead: false } })
-        .catch(() => 0)
-    : 0;
+        .findMany({
+          where: { userId: session.user.id, isRead: false },
+          select: {
+            id: true,
+            questionId: true,
+            question: { select: { id: true, title: true } },
+          },
+          orderBy: { createdAt: "desc" },
+        })
+        .catch(() => [])
+    : [];
+
+  const unreadCount = notifications.length;
 
   return (
     <html lang="ja">
@@ -37,6 +49,10 @@ export default async function RootLayout({
             <HeaderNav session={session} unreadCount={unreadCount} />
           </div>
         </header>
+
+        {/* 通知バナー：全ページ共通、ヘッダー直下 */}
+        <NotificationBanner notifications={notifications} />
+
         <main className="max-w-3xl mx-auto px-4 py-6">
           <Providers>{children}</Providers>
         </main>
