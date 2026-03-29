@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="600" cy="260" r="460" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="600" cy="260" r="350" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="white" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <rect width="1200" height="630" fill="url(#glow2)"/>
+  <!-- Decorative circles -->
+  <circle cx="1090" cy="75" r="230" fill="#f59e0b" fill-opacity="0.05"/>
+  <circle cx="110" cy="570" r="190" fill="#f59e0b" fill-opacity="0.05"/>
+  <!-- Trumpet silhouette (amber-tinted) -->
+  <ellipse cx="240" cy="195" rx="30" ry="18" fill="#fbbf24" fill-opacity="0.35"/>
+  <rect x="240" y="184" width="122" height="22" rx="11" fill="#fbbf24" fill-opacity="0.28"/>
+  <rect x="352" y="182" width="416" height="26" rx="13" fill="#fbbf24" fill-opacity="0.24"/>
+  <rect x="478" y="132" width="26" height="90" rx="13" fill="#fbbf24" fill-opacity="0.38"/>
+  <rect x="524" y="132" width="26" height="90" rx="13" fill="#fbbf24" fill-opacity="0.38"/>
+  <rect x="570" y="132" width="26" height="90" rx="13" fill="#fbbf24" fill-opacity="0.38"/>
+  <ellipse cx="491" cy="132" rx="13" ry="7" fill="#fbbf24" fill-opacity="0.50"/>
+  <ellipse cx="537" cy="132" rx="13" ry="7" fill="#fbbf24" fill-opacity="0.50"/>
+  <ellipse cx="583" cy="132" rx="13" ry="7" fill="#fbbf24" fill-opacity="0.50"/>
+  <ellipse cx="863" cy="195" rx="115" ry="88" fill="none" stroke="#fbbf24" stroke-width="40" stroke-opacity="0.22"/>
+  <!-- Horizontal divider -->
+  <line x1="480" y1="355" x2="720" y2="355" stroke="#f59e0b" stroke-width="1.5" stroke-opacity="0.4"/>
+  <!-- Brand name -->
+  <text x="600" y="435" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="84" font-weight="800" fill="white" fill-opacity="0.95" text-anchor="middle" letter-spacing="-2">Trumpedia</text>
+  <!-- Subtitle -->
+  <text x="600" y="498" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="26" fill="white" fill-opacity="0.55" text-anchor="middle" letter-spacing="0.5">トランペット奏者の知見・思考プロセスを蓄積する Q&amp;A</text>
+  <!-- Bottom accent -->
+  <rect x="0" y="615" width="1200" height="15" fill="#f59e0b" fill-opacity="0.5"/>
+</svg>

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import CategoryFilter from "./CategoryFilter";
 import SortControl from "./SortControl";
 import { LEVEL_LABELS, LEVEL_STYLES, DEFAULT_LEVEL_STYLE } from "@/lib/levelConfig";
+import { getDefaultImage } from "@/lib/defaultImages";
 import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -43,13 +44,13 @@ export default async function HomePage({
       ...(category ? { category } : {}),
     },
     orderBy: buildOrderBy(sort, order),
-    // thumbnail は一覧では未表示のため select から除外（DBカラム依存を回避）
     select: {
       id: true,
       title: true,
       content: true,
       category: true,
       level: true,
+      thumbnail: true,
       createdAt: true,
       _count: { select: { answers: true } },
     },
@@ -123,10 +124,13 @@ export default async function HomePage({
                 {/* 難易度カラーバー（上端） */}
                 <div className={`h-1 w-full ${s.bar}`} />
 
-                {/* サムネイル / プレースホルダー */}
-                <div className={`aspect-video bg-gradient-to-br ${s.placeholder} flex items-center justify-center`}>
-                  <span className="text-3xl opacity-30">🎺</span>
-                </div>
+                {/* サムネイル / デフォルト画像 */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={q.thumbnail ?? getDefaultImage(q.level)}
+                  alt={q.title}
+                  className="w-full aspect-video object-cover"
+                />
 
                 <div className="p-4">
                   <div className="flex flex-wrap gap-1.5 mb-2">

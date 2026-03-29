@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import type { Answer } from "@prisma/client";
@@ -12,11 +13,45 @@ import NotificationReader from "./NotificationReader";
 import ViewTracker from "./ViewTracker";
 import Avatar from "@/app/components/Avatar";
 import { LEVEL_LABELS, LEVEL_STYLES, DEFAULT_LEVEL_STYLE } from "@/lib/levelConfig";
+import { getDefaultImage } from "@/lib/defaultImages";
 
 type AnswerWithMeta = Answer & {
   user: { name: string | null; id: string; image: string | null };
   _count: { likes: number };
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const question = await prisma.question.findUnique({
+    where: { id: Number(id) },
+    select: { title: true, content: true, level: true, thumbnail: true },
+  });
+  if (!question) return { title: "質問が見つかりません" };
+
+  const description = question.content.slice(0, 150);
+  const ogImage = question.thumbnail ?? getDefaultImage(question.level);
+
+  return {
+    title: question.title,
+    description,
+    openGraph: {
+      title: question.title,
+      description,
+      type: "article",
+      images: [{ url: ogImage, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: question.title,
+      description,
+      images: [ogImage],
+    },
+  };
+}
 
 
 export default async function QuestionDetailPage({

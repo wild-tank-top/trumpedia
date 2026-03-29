@@ -9,9 +9,42 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+
 export const metadata: Metadata = {
-  title: "Trumpedia",
-  description: "トランペット奏者の知見・思考プロセス・価値観を蓄積するWebアプリ",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "Trumpedia",
+    template: "%s | Trumpedia",
+  },
+  description:
+    "トランペット奏者の知見・思考プロセス・価値観を蓄積するQ&Aプラットフォーム。Fellowによる本格的な回答でトランペット上達を加速しましょう。",
+  openGraph: {
+    siteName: "Trumpedia",
+    title: "Trumpedia",
+    description:
+      "トランペット奏者の知見・思考プロセス・価値観を蓄積するQ&Aプラットフォーム",
+    url: siteUrl,
+    type: "website",
+    locale: "ja_JP",
+    images: [
+      {
+        url: "/og-image.svg",
+        width: 1200,
+        height: 630,
+        alt: "Trumpedia - トランペット奏者の知見プラットフォーム",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Trumpedia",
+    description:
+      "トランペット奏者の知見・思考プロセス・価値観を蓄積するQ&Aプラットフォーム",
+    images: ["/og-image.svg"],
+  },
 };
 
 export default async function RootLayout({
