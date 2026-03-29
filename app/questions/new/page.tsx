@@ -1,17 +1,16 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { CATEGORIES } from "@/lib/constants";
-import ThumbnailGenerator from "./ThumbnailGenerator";
+import { useEffect } from "react";
 
 type FormData = {
   title: string;
   category: string;
   level: string;
   content: string;
-  thumbnail: string | null;
 };
 
 const LEVELS = [
@@ -28,7 +27,6 @@ export default function NewQuestionPage() {
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [pendingData, setPendingData] = useState<FormData | null>(null);
-  const [selectedThumbnail, setSelectedThumbnail] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -38,14 +36,6 @@ export default function NewQuestionPage() {
 
   if (status === "loading" || status === "unauthenticated") {
     return null;
-  }
-
-  function getFormValues() {
-    const form = formRef.current;
-    if (!form) return { title: "", category: "" };
-    const get = (name: string) =>
-      (form.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement | null)?.value ?? "";
-    return { title: get("title"), category: get("category") };
   }
 
   function handlePrepare(e: React.FormEvent<HTMLFormElement>) {
@@ -59,7 +49,6 @@ export default function NewQuestionPage() {
       category: get("category"),
       level: get("level"),
       content: get("content"),
-      thumbnail: selectedThumbnail,
     });
     setError("");
     setShowModal(true);
@@ -151,14 +140,6 @@ export default function NewQuestionPage() {
           />
         </Field>
 
-        {/* サムネイル生成 */}
-        <Field label="サムネイル画像" hint="タイトルをもとにAIが画像を生成します（任意）">
-          <ThumbnailGenerator
-            getFormValues={getFormValues}
-            onSelect={setSelectedThumbnail}
-          />
-        </Field>
-
         <div className="flex gap-3 pt-2">
           <button
             type="button"
@@ -184,23 +165,17 @@ export default function NewQuestionPage() {
             <p className="text-sm text-gray-500 mb-4">この内容で質問を投稿しますか？</p>
 
             <div className="bg-gray-50 rounded-lg p-4 mb-5 space-y-2">
-              {/* サムネイルプレビュー（選択済みの場合） */}
-              {pendingData.thumbnail && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={pendingData.thumbnail}
-                  alt="サムネイル"
-                  className="w-full rounded-lg object-cover aspect-video mb-3"
-                />
-              )}
               <p className="text-sm font-medium text-gray-900 line-clamp-2">{pendingData.title}</p>
               <p className="text-xs text-gray-400">
                 {pendingData.category}　／　{LEVELS.find(l => l.value === pendingData.level)?.label ?? pendingData.level}
               </p>
               <p className="text-xs text-gray-500 line-clamp-3 leading-relaxed">{pendingData.content}</p>
-              {!pendingData.thumbnail && (
-                <p className="text-xs text-gray-400 italic">サムネイルなし</p>
-              )}
+              <p className="text-xs text-gray-400 flex items-center gap-1">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909" />
+                </svg>
+                サムネイルは自動で割り当てられます
+              </p>
             </div>
 
             {error && <p className="text-red-500 text-sm mb-3">{error}</p>}

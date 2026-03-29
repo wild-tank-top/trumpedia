@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { pickRandomThumbnail } from "@/lib/defaultImages";
 
 // GET /api/questions - 承認済み質問一覧取得
 export async function GET() {
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
       content,
       status: "pending",
       userId: session.user.id,
-      ...(thumbnail ? { thumbnail: String(thumbnail) } : {}),
+      thumbnail: thumbnail ? String(thumbnail) : pickRandomThumbnail(),
     },
   });
   return NextResponse.json(question, { status: 201 });

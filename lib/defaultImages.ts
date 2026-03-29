@@ -1,16 +1,25 @@
 /**
- * 難易度別のデフォルトサムネイル画像パス
- * 質問にサムネイルが設定されていない場合に使用する
+ * デフォルトサムネイル画像プール
+ * 質問投稿時に thumbnail が指定されていない場合、ここからランダムに割り当てる
  */
-const DEFAULT_IMAGES: Record<string, string> = {
-  beginner:     "/images/defaults/beginner.svg",
-  intermediate: "/images/defaults/intermediate.svg",
-  advanced:     "/images/defaults/advanced.svg",
-};
+const THUMBNAIL_POOL = [
+  "/images/default-thumbnails/trumpet-1.svg",
+  "/images/default-thumbnails/trumpet-2.svg",
+  "/images/default-thumbnails/trumpet-3.svg",
+  "/images/default-thumbnails/trumpet-4.svg",
+  "/images/default-thumbnails/trumpet-5.svg",
+] as const;
 
 /**
- * 質問の難易度に応じたデフォルト画像パスを返す
+ * 質問投稿時にランダムなデフォルトサムネイルを返す（API側で使用）
  */
-export function getDefaultImage(level: string): string {
-  return DEFAULT_IMAGES[level] ?? "/images/defaults/default.svg";
+export function pickRandomThumbnail(): string {
+  return THUMBNAIL_POOL[Math.floor(Math.random() * THUMBNAIL_POOL.length)];
+}
+
+/**
+ * 表示時フォールバック（DBに thumbnail が未保存の既存質問用）
+ */
+export function getDefaultImage(_level: string): string {
+  return THUMBNAIL_POOL[0];
 }
