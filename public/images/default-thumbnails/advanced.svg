@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 上級: Amber/Gold background × white trumpet pictogram -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="600" cy="315" r="295" fill="white" fill-opacity="0.06"/>
+  <circle cx="600" cy="315" r="200" fill="white" fill-opacity="0.06"/>
+
+  <!-- ===== TRUMPET PICTOGRAM (flat white silhouette) ===== -->
+
+  <ellipse cx="241" cy="310" rx="22" ry="14" fill="white"/>
+  <rect x="241" y="303" width="112" height="14" rx="7" fill="white"/>
+
+  <rect x="312" y="297" width="26" height="77" rx="13" fill="white"/>
+  <rect x="325" y="297" width="313" height="26" rx="13" fill="white"/>
+  <rect x="325" y="352" width="313" height="22" rx="11" fill="white"/>
+  <rect x="624" y="297" width="26" height="77" rx="13" fill="white"/>
+
+  <rect x="638" y="297" width="126" height="26" rx="13" fill="white"/>
+
+  <path fill-rule="evenodd" fill="white" d="
+    M 763,297
+    C 813,285 868,250 918,225
+    C 948,210 968,215 975,238
+    C 981,254 981,285 981,310
+    C 981,335 981,366 975,382
+    C 968,405 948,410 918,395
+    C 868,370 813,335 763,323
+    Z
+    M 948,310 a 14,55 0 1,0 28,0 a 14,55 0 1,0 -28,0
+  "/>
+
+  <rect x="396" y="252" width="24" height="97" rx="12" fill="white"/>
+  <rect x="451" y="252" width="24" height="97" rx="12" fill="white"/>
+  <rect x="506" y="252" width="24" height="97" rx="12" fill="white"/>
+</svg>

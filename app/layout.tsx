@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     locale: "ja_JP",
     images: [
       {
-        url: "/images/default-thumbnails/trumpet-1.svg",
+        url: "/images/default-thumbnails/beginner.svg",
         width: 1200,
         height: 630,
         alt: "Trumpedia - トランペット奏者の知見プラットフォーム",
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     title: "Trumpedia",
     description:
       "トランペット奏者の知見・思考プロセス・価値観を蓄積するQ&Aプラットフォーム",
-    images: ["/images/default-thumbnails/trumpet-1.svg"],
+    images: ["/images/default-thumbnails/beginner.svg"],
   },
 };
 

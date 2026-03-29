@@ -1,25 +1,17 @@
 /**
- * デフォルトサムネイル画像プール
- * 質問投稿時に thumbnail が指定されていない場合、ここからランダムに割り当てる
+ * 難易度別デフォルトサムネイル（ピクトグラム）
+ * 質問投稿時・表示時ともにここから難易度に応じた画像を返す
  */
-const THUMBNAIL_POOL = [
-  "/images/default-thumbnails/trumpet-1.svg",
-  "/images/default-thumbnails/trumpet-2.svg",
-  "/images/default-thumbnails/trumpet-3.svg",
-  "/images/default-thumbnails/trumpet-4.svg",
-  "/images/default-thumbnails/trumpet-5.svg",
-] as const;
+const LEVEL_IMAGES: Record<string, string> = {
+  beginner:     "/images/default-thumbnails/beginner.svg",
+  intermediate: "/images/default-thumbnails/intermediate.svg",
+  advanced:     "/images/default-thumbnails/advanced.svg",
+};
 
 /**
- * 質問投稿時にランダムなデフォルトサムネイルを返す（API側で使用）
+ * 難易度に応じたデフォルトサムネイルパスを返す
+ * (質問投稿 API・カード表示・OGP で共通使用)
  */
-export function pickRandomThumbnail(): string {
-  return THUMBNAIL_POOL[Math.floor(Math.random() * THUMBNAIL_POOL.length)];
-}
-
-/**
- * 表示時フォールバック（DBに thumbnail が未保存の既存質問用）
- */
-export function getDefaultImage(_level: string): string {
-  return THUMBNAIL_POOL[0];
+export function getDefaultImage(level: string): string {
+  return LEVEL_IMAGES[level] ?? LEVEL_IMAGES.beginner;
 }

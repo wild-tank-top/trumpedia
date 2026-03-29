@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
-import { pickRandomThumbnail } from "@/lib/defaultImages";
+import { getDefaultImage } from "@/lib/defaultImages";
 
 // GET /api/questions - 承認済み質問一覧取得
 export async function GET() {
@@ -36,7 +36,8 @@ export async function POST(req: NextRequest) {
       content,
       status: "pending",
       userId: session.user.id,
-      thumbnail: thumbnail ? String(thumbnail) : pickRandomThumbnail(),
+      // thumbnail 未指定時は難易度に対応するピクトグラムを自動割り当て
+      thumbnail: thumbnail ? String(thumbnail) : getDefaultImage(level),
     },
   });
   return NextResponse.json(question, { status: 201 });
