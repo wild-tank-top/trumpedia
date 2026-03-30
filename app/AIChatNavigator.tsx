@@ -18,6 +18,41 @@ type Question = {
 
 type Props = { questions: Question[] };
 
+// ── 類義語グループ ────────────────────────────────────────────────────
+// いずれかの語がキーワードにマッチしたとき、グループ全体で質問を検索する
+const SYNONYM_GROUPS: string[][] = [
+  // 高音域
+  [
+    "高音", "高音域", "高い音", "上の音",
+    "ハイトーン", "ハイノート", "ハイC", "ハイBb", "ハイB", "ハイF",
+    "ダブルハイ", "フラジオ", "ハイ",
+  ],
+  // 低音域
+  [
+    "低音", "低音域", "低い音", "下の音",
+    "ローノート", "ロートーン", "ペダル", "ペダルトーン",
+    "ロー",
+  ],
+];
+
+/**
+ * AIが抽出したキーワードを類義語グループで展開する。
+ * 例: ["ハイトーン"] → ["ハイトーン","高音","高音域","ハイC","フラジオ",...]
+ */
+function expandWithSynonyms(keywords: string[]): string[] {
+  const expanded = new Set(keywords);
+  for (const kw of keywords) {
+    for (const group of SYNONYM_GROUPS) {
+      const hit = group.some((term) => kw.includes(term) || term.includes(kw));
+      if (hit) {
+        group.forEach((term) => expanded.add(term));
+        break;
+      }
+    }
+  }
+  return Array.from(expanded);
+}
+
 export default function AIChatNavigator({ questions }: Props) {
   const [open,     setOpen]     = useState(false);
   const [message,  setMessage]  = useState("");
@@ -56,17 +91,13 @@ export default function AIChatNavigator({ questions }: Props) {
       const kws = json.keywords ?? [];
       setKeywords(kws);
 
-      // キーワードマッチング:
-      // 完全一致 + 3文字以上のキーワードは先頭2文字でも照合
-      // 例: "ハイトーン" → "ハイ" でも検索（"ハイBb", "ハイF" 等にヒット）
-      function matchesKeyword(q: Question, kw: string): boolean {
-        const text = q.title + " " + q.content + " " + q.category;
-        if (text.includes(kw)) return true;
-        if (kw.length >= 3 && text.includes(kw.slice(0, 2))) return true;
-        return false;
-      }
+      // 類義語グループで展開してからマッチング
+      const expandedKws = expandWithSynonyms(kws);
 
-      const matched = questions.filter((q) => kws.some((kw) => matchesKeyword(q, kw)));
+      const matched = questions.filter((q) => {
+        const text = q.title + " " + q.content + " " + q.category;
+        return expandedKws.some((kw) => text.includes(kw));
+      });
       setFiltered(matched);
     } catch (err) {
       console.error("[AIChatNavigator] fetch error:", err);
