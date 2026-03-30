@@ -70,7 +70,18 @@ export async function callGemini({
     throw err;
   }
 
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-  console.info("[gemini] response (200 chars):", JSON.stringify(text.slice(0, 200)));
-  return text;
+  const raw = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  console.info("[gemini] raw response (200 chars):", JSON.stringify(raw.slice(0, 200)));
+
+  // responseMimeType を指定しても前置きテキストが付く場合があるため
+  // 最初の { から最後の } までを抽出して返す
+  const firstBrace = raw.indexOf("{");
+  const lastBrace  = raw.lastIndexOf("}");
+  if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {
+    console.error("[gemini] no JSON object found in response:", raw.slice(0, 200));
+    throw new Error("No JSON object found in response");
+  }
+  const extracted = raw.slice(firstBrace, lastBrace + 1);
+  console.info("[gemini] extracted JSON:", extracted.slice(0, 200));
+  return extracted;
 }
