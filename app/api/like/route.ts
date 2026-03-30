@@ -31,29 +31,32 @@ export async function POST(req: NextRequest) {
 
   const userId = session.user.id;
 
-  // ── Answer 存在確認 ────────────────────────────────────
-  const answer = await prisma.answer.findUnique({
-    where: { id: answerId },
-    select: { id: true },
-  });
-  if (!answer) {
-    return NextResponse.json({ error: "回答が見つかりません" }, { status: 404 });
+  try {
+    // ── Answer 存在確認 ────────────────────────────────────
+    const answer = await prisma.answer.findUnique({
+      where: { id: answerId },
+      select: { id: true },
+    });
+    if (!answer) {
+      return NextResponse.json({ error: "回答が見つかりません" }, { status: 404 });
+    }
+
+    // ── トグル処理 ────────────────────────────────────────
+    const existing = await prisma.like.findUnique({
+      where: { userId_answerId: { userId, answerId } },
+    });
+
+    if (existing) {
+      await prisma.like.delete({ where: { id: existing.id } });
+    } else {
+      await prisma.like.create({ data: { userId, answerId } });
+    }
+
+    // ── 最新カウントを返す ────────────────────────────────
+    const count = await prisma.like.count({ where: { answerId } });
+    return NextResponse.json({ liked: !existing, count });
+  } catch (err) {
+    console.error("[POST /api/like]", err);
+    return NextResponse.json({ error: "いいねの処理に失敗しました" }, { status: 500 });
   }
-
-  // ── トグル処理 ────────────────────────────────────────
-  const existing = await prisma.like.findUnique({
-    where: { userId_answerId: { userId, answerId } },
-  });
-
-  if (existing) {
-    // いいね解除
-    await prisma.like.delete({ where: { id: existing.id } });
-  } else {
-    // いいね追加
-    await prisma.like.create({ data: { userId, answerId } });
-  }
-
-  // ── 最新カウントを返す ────────────────────────────────
-  const count = await prisma.like.count({ where: { answerId } });
-  return NextResponse.json({ liked: !existing, count });
 }

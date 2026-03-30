@@ -16,21 +16,26 @@ export default function SupplementForm({ questionId }: { questionId: number }) {
     setLoading(true);
     setError("");
 
-    const res = await fetch(`/api/questions/${questionId}/supplements`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content }),
-    });
+    try {
+      const res = await fetch(`/api/questions/${questionId}/supplements`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
 
-    if (res.ok) {
-      setContent("");
-      setOpen(false);
-      router.refresh();
-    } else {
-      const json = await res.json();
-      setError(json.error ?? "投稿に失敗しました");
+      if (res.ok) {
+        setContent("");
+        setOpen(false);
+        router.refresh();
+      } else {
+        const json = await res.json().catch(() => ({}));
+        setError((json as { error?: string }).error ?? "投稿に失敗しました");
+      }
+    } catch {
+      setError("通信エラーが発生しました。もう一度お試しください。");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   if (!open) {

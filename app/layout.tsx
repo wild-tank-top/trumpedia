@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -6,6 +7,14 @@ import HeaderNav from "./HeaderNav";
 import NotificationBanner from "./components/NotificationBanner";
 import Providers from "./providers";
 import Link from "next/link";
+
+const notoSansJP = Noto_Sans_JP({
+  weight: ["400", "500", "700", "900"],
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-noto-sans-jp",
+  preload: false, // 日本語フォントは全グリフのプリロードを省略
+});
 
 export const dynamic = "force-dynamic";
 
@@ -72,7 +81,7 @@ export default async function RootLayout({
   const unreadCount = notifications.length;
 
   return (
-    <html lang="ja">
+    <html lang="ja" className={notoSansJP.variable}>
       <body className="bg-gray-50 text-gray-800 min-h-screen">
         <header className="bg-white border-b border-gray-200 sticky top-0 z-50 relative">
           <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">

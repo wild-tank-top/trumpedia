@@ -22,10 +22,14 @@ export async function PATCH(
     return NextResponse.json({ error: "無効なステータスです" }, { status: 400 });
   }
 
-  const question = await prisma.question.update({
-    where: { id: Number(id) },
-    data: { status },
-  });
-
-  return NextResponse.json(question);
+  try {
+    const question = await prisma.question.update({
+      where: { id: Number(id) },
+      data: { status },
+    });
+    return NextResponse.json(question);
+  } catch (err) {
+    console.error("[PATCH /api/admin/questions]", err);
+    return NextResponse.json({ error: "ステータスの更新に失敗しました" }, { status: 500 });
+  }
 }
