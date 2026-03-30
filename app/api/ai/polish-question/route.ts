@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateText } from "ai";
 import { auth } from "@/auth";
-import { GEMINI_MODEL, THINKING_OPTIONS, createGeminiClient } from "@/lib/gemini";
+import { callGemini } from "@/lib/gemini";
 
 export const dynamic = "force-dynamic";
 
@@ -30,26 +29,14 @@ function buildPrompt(
     "タイトル（下書き）: " + (title || "（未入力）"),
     "質問内容（下書き）: " + (content || "（未入力）"),
     "",
-    "【ルール】",
+    "ルール:",
     "・タイトルは疑問形で30文字以内",
     "・内容は丁寧な文体で200文字以内",
-    "・下書きの情報を活かして膨らませてください",
-    "・下書きが空の場合もカテゴリ・難易度から質問を生成してください",
+    "・下書きの情報を活かして膨らませること",
     "",
-    '以下のJSONのみを返してください（説明文不要）: {"title":"タイトル","content":"内容"}',
+    "次のJSON形式で返してください:",
+    "{\"title\":\"タイトル\",\"content\":\"内容\"}",
   ].join("\n");
-}
-
-/** テキストから最初の JSON オブジェクトを抽出する（前後の説明文を無視） */
-function extractJSON(text: string): Record<string, unknown> | null {
-  const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "");
-  const match = cleaned.match(/\{[\s\S]*?\}/);
-  if (!match) return null;
-  try {
-    return JSON.parse(match[0]) as Record<string, unknown>;
-  } catch {
-    return null;
-  }
 }
 
 export async function POST(req: NextRequest) {
@@ -68,14 +55,6 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const google = createGeminiClient();
-  if (!google) {
-    return NextResponse.json(
-      { error: "AI機能が設定されていません。" },
-      { status: 503 }
-    );
-  }
-
   let title: string, content: string, category: string, level: string;
   try {
     const body = await req.json() as Record<string, unknown>;
@@ -91,27 +70,23 @@ export async function POST(req: NextRequest) {
   lastUsed.set(userId, now);
 
   try {
-    console.info("[polish-question] calling model:", GEMINI_MODEL);
-    const { text } = await generateText({
-      model: google(GEMINI_MODEL),
+    console.info("[polish-question] start | userId:", userId.slice(0, 8));
+
+    const text = await callGemini({
       prompt: buildPrompt(title, content, category, level),
       maxOutputTokens: 512,
       temperature: 0.7,
-      providerOptions: THINKING_OPTIONS,
     });
 
-    console.info("[polish-question] raw response:", JSON.stringify(text.slice(0, 300)));
-
-    const parsed = extractJSON(text);
-    if (!parsed) {
-      console.error("[polish-question] JSON parse failed. raw text:", text.slice(0, 300));
-      throw new Error("JSON not found in response");
-    }
-
+    const parsed = JSON.parse(text) as { title?: unknown; content?: unknown };
     const newTitle   = String(parsed.title   ?? "").trim();
     const newContent = String(parsed.content ?? "").trim();
-    if (!newTitle || !newContent) throw new Error("Empty response fields");
 
+    if (!newTitle || !newContent) {
+      throw new Error("Empty fields in response: " + text.slice(0, 100));
+    }
+
+    console.info("[polish-question] success");
     return NextResponse.json({ title: newTitle, content: newContent });
   } catch (err: unknown) {
     const e = err as { status?: number; message?: string };
@@ -123,10 +98,7 @@ export async function POST(req: NextRequest) {
       );
     }
     return NextResponse.json(
-      {
-        error: "AI処理中にエラーが発生しました。もう一度お試しください。",
-        detail: e?.message ?? String(err),
-      },
+      { error: "AI処理中にエラーが発生しました。もう一度お試しください。", detail: e?.message ?? String(err) },
       { status: 500 }
     );
   }

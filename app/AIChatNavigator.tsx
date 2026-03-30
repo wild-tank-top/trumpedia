@@ -44,7 +44,7 @@ export default function AIChatNavigator({ questions }: Props) {
 
       if (!res.ok) {
         // ブラウザコンソールに詳細を出力（デバッグ用）
-        console.error("[AIChatNavigator] API error", res.status, json);
+        console.error("[AIChatNavigator] API error", res.status, "error:", json.error, "detail:", json.detail);
         if (res.status === 503) {
           setError("AI機能は現在メンテナンス中です。通常の検索をご利用ください。");
         } else {

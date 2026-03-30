@@ -1,33 +1,77 @@
 /**
- * Gemini AI クライアント共有モジュール
+ * Gemini AI ユーティリティ
+ *
+ * Vercel AI SDK を介さず Gemini REST API を直接 fetch で呼び出す。
+ * responseMimeType: "application/json" を指定することでモデルに
+ * 有効な JSON のみを返させる（書式違反を防ぐ）。
  *
  * モデル: gemini-2.5-flash
- * APIバージョン: v1 (安定版)
- * 思考モード: thinkingBudget=1024
- *   - 0 にすると JSON 書式指示を無視した自由テキストが返るため最小限の思考を許容
- *   - 1024 トークン程度なら Vercel の 10s タイムアウト内に収まる
+ * APIバージョン: v1beta
  */
-
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
 
 export const GEMINI_MODEL = "gemini-2.5-flash";
-const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1";
+const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta";
+
+type GeminiResponse = {
+  candidates?: Array<{
+    content?: { parts?: Array<{ text?: string }> };
+    finishReason?: string;
+  }>;
+  error?: { code: number; message: string; status: string };
+};
 
 /**
- * 思考モードを最小限に抑えるプロバイダーオプション。
- * 0 にすると書式指示を守らないため 1024 を指定する。
+ * Gemini API を直接呼び出してテキストを生成する。
+ * responseMimeType: "application/json" で JSON 強制出力。
  */
-export const THINKING_OPTIONS = {
-  google: { thinkingConfig: { thinkingBudget: 1024 } },
-} as const;
-
-/** Google Generative AI クライアントを生成する。APIキー未設定時は null を返す。 */
-export function createGeminiClient() {
+export async function callGemini({
+  prompt,
+  maxOutputTokens = 512,
+  temperature = 0.5,
+}: {
+  prompt: string;
+  maxOutputTokens?: number;
+  temperature?: number;
+}): Promise<string> {
   const apiKey = process.env.GOOGLE_GENERATION_AI_API_KEY;
   if (!apiKey) {
-    console.error("[gemini] GOOGLE_GENERATION_AI_API_KEY is NOT set");
-    return null;
+    throw new Error("GOOGLE_GENERATION_AI_API_KEY is not set");
   }
-  console.info("[gemini] client created | key:", apiKey.slice(0, 8) + "...", "| model:", GEMINI_MODEL);
-  return createGoogleGenerativeAI({ apiKey, baseURL: GEMINI_BASE_URL });
+
+  const url = `${GEMINI_API_BASE}/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+
+  console.info(
+    "[gemini] callGemini | key:", apiKey.slice(0, 8) + "...",
+    "| model:", GEMINI_MODEL,
+    "| maxOutputTokens:", maxOutputTokens
+  );
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        responseMimeType: "application/json",
+        maxOutputTokens,
+        temperature,
+        thinkingConfig: { thinkingBudget: 512 },
+      },
+    }),
+  });
+
+  const data = (await res.json()) as GeminiResponse;
+
+  if (!res.ok || data.error) {
+    const msg = data.error?.message ?? `HTTP ${res.status}`;
+    const code = data.error?.code ?? res.status;
+    console.error("[gemini] API error | code:", code, "| message:", msg);
+    const err = new Error(msg) as Error & { status: number };
+    err.status = code;
+    throw err;
+  }
+
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  console.info("[gemini] response (200 chars):", JSON.stringify(text.slice(0, 200)));
+  return text;
 }
