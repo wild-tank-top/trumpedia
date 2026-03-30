@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateText } from "ai";
 import { auth } from "@/auth";
-import {
-  GEMINI_MODEL,
-  THINKING_DISABLED,
-  createGeminiClient,
-  checkAIAvailability,
-} from "@/lib/gemini";
+import { GEMINI_MODEL, THINKING_OPTIONS, createGeminiClient } from "@/lib/gemini";
 
-// Vercel キャッシュを無効化（常に最新のコードを使用）
 export const dynamic = "force-dynamic";
 
 const lastUsed = new Map<string, number>();
@@ -46,6 +40,18 @@ function buildPrompt(
   ].join("\n");
 }
 
+/** テキストから最初の JSON オブジェクトを抽出する（前後の説明文を無視） */
+function extractJSON(text: string): Record<string, unknown> | null {
+  const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "");
+  const match = cleaned.match(/\{[\s\S]*?\}/);
+  if (!match) return null;
+  try {
+    return JSON.parse(match[0]) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user.id) {
@@ -62,11 +68,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // ── AI 利用可否チェック ───────────────────────────────────────────
-  const available = await checkAIAvailability();
-  if (!available) {
+  const google = createGeminiClient();
+  if (!google) {
     return NextResponse.json(
-      { error: "AI機能は現在ご利用いただけません。しばらくしてからお試しください。" },
+      { error: "AI機能が設定されていません。" },
       { status: 503 }
     );
   }
@@ -86,22 +91,22 @@ export async function POST(req: NextRequest) {
   lastUsed.set(userId, now);
 
   try {
-    const google = createGeminiClient()!;
-    console.info("[polish-question] calling model:", GEMINI_MODEL, "thinking: disabled");
-
+    console.info("[polish-question] calling model:", GEMINI_MODEL);
     const { text } = await generateText({
       model: google(GEMINI_MODEL),
       prompt: buildPrompt(title, content, category, level),
       maxOutputTokens: 512,
       temperature: 0.7,
-      providerOptions: THINKING_DISABLED,
+      providerOptions: THINKING_OPTIONS,
     });
 
-    console.info("[polish-question] response length:", text.length);
+    console.info("[polish-question] raw response:", JSON.stringify(text.slice(0, 300)));
 
-    const jsonMatch = text.match(/\{[\s\S]*?\}/);
-    if (!jsonMatch) throw new Error("JSON not found in response: " + text.slice(0, 100));
-    const parsed = JSON.parse(jsonMatch[0]) as { title?: unknown; content?: unknown };
+    const parsed = extractJSON(text);
+    if (!parsed) {
+      console.error("[polish-question] JSON parse failed. raw text:", text.slice(0, 300));
+      throw new Error("JSON not found in response");
+    }
 
     const newTitle   = String(parsed.title   ?? "").trim();
     const newContent = String(parsed.content ?? "").trim();

@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateText } from "ai";
-import {
-  GEMINI_MODEL,
-  THINKING_DISABLED,
-  createGeminiClient,
-  checkAIAvailability,
-} from "@/lib/gemini";
+import { GEMINI_MODEL, THINKING_OPTIONS, createGeminiClient } from "@/lib/gemini";
 
-// Vercel キャッシュを無効化（常に最新のコードを使用）
 export const dynamic = "force-dynamic";
 
 let lastGlobalCall = 0;
@@ -29,17 +23,29 @@ function buildPrompt(message: string): string {
   ].join("\n");
 }
 
+/** テキストから最初の JSON オブジェクトを抽出する（前後の説明文を無視） */
+function extractJSON(text: string): Record<string, unknown> | null {
+  // コードブロック内の JSON も対象にする
+  const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "");
+  const match = cleaned.match(/\{[\s\S]*?\}/);
+  if (!match) return null;
+  try {
+    return JSON.parse(match[0]) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(req: NextRequest) {
   const now = Date.now();
   if (now - lastGlobalCall < GLOBAL_COOLDOWN_MS) {
     return NextResponse.json({ error: "少し待ってから再度お試しください。" }, { status: 429 });
   }
 
-  // ── AI 利用可否チェック ───────────────────────────────────────────
-  const available = await checkAIAvailability();
-  if (!available) {
+  const google = createGeminiClient();
+  if (!google) {
     return NextResponse.json(
-      { error: "AI機能は現在ご利用いただけません。しばらくしてからお試しください。" },
+      { error: "AI機能が設定されていません。" },
       { status: 503 }
     );
   }
@@ -60,29 +66,33 @@ export async function POST(req: NextRequest) {
   lastGlobalCall = now;
 
   try {
-    const google = createGeminiClient()!;
-    console.info("[chat-navigate] calling model:", GEMINI_MODEL, "thinking: disabled");
-
+    console.info("[chat-navigate] calling model:", GEMINI_MODEL);
     const { text } = await generateText({
       model: google(GEMINI_MODEL),
       prompt: buildPrompt(message),
-      maxOutputTokens: 128,
+      maxOutputTokens: 256,
       temperature: 0.5,
-      providerOptions: THINKING_DISABLED,
+      providerOptions: THINKING_OPTIONS,
     });
 
-    console.info("[chat-navigate] response length:", text.length, "text:", text.slice(0, 200));
+    console.info("[chat-navigate] raw response:", JSON.stringify(text.slice(0, 300)));
 
-    const jsonMatch = text.match(/\{[\s\S]*?\}/);
-    if (!jsonMatch) throw new Error("JSON not found in response: " + text.slice(0, 100));
-    const parsed = JSON.parse(jsonMatch[0]) as { keywords?: unknown };
+    const parsed = extractJSON(text);
+    if (!parsed) {
+      console.error("[chat-navigate] JSON parse failed. raw text:", text.slice(0, 300));
+      throw new Error("JSON not found in response");
+    }
 
     const keywords = Array.isArray(parsed.keywords)
       ? (parsed.keywords as unknown[]).map(String).filter(Boolean).slice(0, 4)
       : [];
 
-    if (keywords.length === 0) throw new Error("No keywords extracted");
+    if (keywords.length === 0) {
+      console.error("[chat-navigate] No keywords in parsed:", parsed);
+      throw new Error("No keywords extracted");
+    }
 
+    console.info("[chat-navigate] keywords:", keywords);
     return NextResponse.json({ keywords });
   } catch (err: unknown) {
     const e = err as { status?: number; message?: string };
