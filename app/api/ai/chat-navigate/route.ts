@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
 
-const MODEL = "gemini-1.5-flash";
+const MODEL = "gemini-2.0-flash-lite";
 
 let lastGlobalCall = 0;
 const GLOBAL_COOLDOWN_MS = 3_000;

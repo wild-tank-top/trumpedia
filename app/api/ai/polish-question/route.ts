@@ -3,7 +3,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
 import { auth } from "@/auth";
 
-const MODEL = "gemini-1.5-flash";
+const MODEL = "gemini-2.0-flash-lite";
 
 const lastUsed = new Map<string, number>();
 const COOLDOWN_MS = 10_000;
