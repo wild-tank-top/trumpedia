@@ -28,6 +28,7 @@ export default function AnswerForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
+  const [milestoneCount, setMilestoneCount] = useState<number | null>(null);
 
   const isEditing = !!existingAnswer;
 
@@ -81,7 +82,13 @@ export default function AnswerForm({
 
     if (res.ok) {
       router.refresh();
-      if (!isEditing) form.reset();
+      if (!isEditing) {
+        form.reset();
+        const json = await res.json().catch(() => ({}));
+        if (typeof json.totalAnswerCount === "number") {
+          setMilestoneCount(json.totalAnswerCount);
+        }
+      }
       setDone(true);
     } else {
       const json = await res.json().catch(() => ({}));
@@ -92,8 +99,8 @@ export default function AnswerForm({
 
   if (done) {
     return (
-      <div className="text-center py-6">
-        <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-700 px-4 py-2 rounded-lg mb-3">
+      <div className="text-center py-6 space-y-3">
+        <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-700 px-4 py-2 rounded-lg">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
@@ -101,11 +108,35 @@ export default function AnswerForm({
             回答を{isEditing ? "更新" : "投稿"}しました
           </span>
         </div>
+
+        {!isEditing && milestoneCount !== null && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-center">
+            <p className="text-amber-800 font-semibold text-sm">
+              おめでとうございます！これで <span className="text-lg font-bold">{milestoneCount}</span> 件目の貢献です！
+            </p>
+            <div className="mt-2">
+              <div className="flex items-center justify-between text-xs text-amber-600 mb-1">
+                <span>AIクローン進捗</span>
+                <span>{milestoneCount} / 100</span>
+              </div>
+              <div className="w-full bg-amber-100 rounded-full h-2">
+                <div
+                  className="bg-amber-500 h-2 rounded-full transition-all"
+                  style={{ width: `${Math.min(milestoneCount, 100)}%` }}
+                />
+              </div>
+              {milestoneCount >= 100 && (
+                <p className="text-xs text-amber-700 mt-1 font-medium">AI分身作成の準備が整いました！</p>
+              )}
+            </div>
+          </div>
+        )}
+
         {isEditing ? (
           <p>
             <button
               onClick={() => setDone(false)}
-              className="text-sm text-teal-600 hover:underline mt-1"
+              className="text-sm text-teal-600 hover:underline"
             >
               再編集する
             </button>
@@ -114,7 +145,7 @@ export default function AnswerForm({
           <p>
             <button
               onClick={() => setDone(false)}
-              className="text-sm text-gray-400 hover:underline mt-1"
+              className="text-sm text-gray-400 hover:underline"
             >
               続けて回答する
             </button>

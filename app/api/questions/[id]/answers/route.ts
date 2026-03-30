@@ -64,7 +64,12 @@ export async function POST(
       data: { lastAnsweredAt: now },
     }),
   ]);
-  return NextResponse.json(answer, { status: 201 });
+
+  const totalAnswerCount = await prisma.answer.count({
+    where: { userId: session!.user.id },
+  });
+
+  return NextResponse.json({ ...answer, totalAnswerCount }, { status: 201 });
 }
 
 // PUT /api/questions/[id]/answers - 既存回答を更新

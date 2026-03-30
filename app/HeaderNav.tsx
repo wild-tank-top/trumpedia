@@ -8,7 +8,7 @@ import type { Session } from "next-auth";
 import Avatar from "@/app/components/Avatar";
 import {
   Menu, X, Users, PenLine, Settings,
-  LogOut, LogIn, UserPlus,
+  LogOut, LogIn, UserPlus, LayoutDashboard,
 } from "lucide-react";
 
 const ROLE_LABELS = {
@@ -62,6 +62,15 @@ export default function HeaderNav({
             >
               質問を投稿
             </Link>
+
+            {(role === "fellow" || role === "admin") && (
+              <Link
+                href="/dashboard"
+                className="text-sm text-amber-600 hover:text-amber-700 px-3 py-1.5 rounded-lg hover:bg-amber-50 transition-colors"
+              >
+                Dashboard
+              </Link>
+            )}
 
             {role === "admin" && (
               <Link
@@ -159,6 +168,12 @@ export default function HeaderNav({
               <MobileLink href="/questions/new" icon={<PenLine size={18} />} onClick={close}>
                 質問を投稿
               </MobileLink>
+
+              {(role === "fellow" || role === "admin") && (
+                <MobileLink href="/dashboard" icon={<LayoutDashboard size={18} />} onClick={close}>
+                  Dashboard
+                </MobileLink>
+              )}
 
               {role === "admin" && (
                 <MobileLink href="/admin" icon={<Settings size={18} />} onClick={close}>
