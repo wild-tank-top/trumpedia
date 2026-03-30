@@ -55,7 +55,6 @@ export async function callGemini({
         responseMimeType: "application/json",
         maxOutputTokens,
         temperature,
-        thinkingConfig: { thinkingBudget: 512 },
       },
     }),
   });
