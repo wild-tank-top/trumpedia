@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
 import { auth } from "@/auth";
-
-const MODEL = "gemini-2.0-flash-lite";
+import { GEMINI_MODEL, createGeminiClient, checkAIAvailability } from "@/lib/gemini";
 
 const lastUsed = new Map<string, number>();
 const COOLDOWN_MS = 10_000;
@@ -56,9 +54,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const apiKey = process.env.GOOGLE_GENERATION_AI_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json({ error: "AI機能が設定されていません" }, { status: 503 });
+  // ── AI利用可否チェック ────────────────────────────────────────────
+  const available = await checkAIAvailability();
+  if (!available) {
+    return NextResponse.json(
+      { error: "AI機能は現在ご利用いただけません。しばらくしてからお試しください。" },
+      { status: 503 }
+    );
   }
 
   let title: string, content: string, category: string, level: string;
@@ -76,9 +78,9 @@ export async function POST(req: NextRequest) {
   lastUsed.set(userId, now);
 
   try {
-    const google = createGoogleGenerativeAI({ apiKey });
+    const google = createGeminiClient()!;
     const { text } = await generateText({
-      model: google(MODEL),
+      model: google(GEMINI_MODEL),
       prompt: buildPrompt(title, content, category, level),
       maxOutputTokens: 512,
       temperature: 0.7,
@@ -95,7 +97,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ title: newTitle, content: newContent });
   } catch (err: unknown) {
     const e = err as { status?: number; message?: string };
-    console.error("[polish-question]", e?.status, e?.message, err);
+    console.error("[polish-question] status:", e?.status, "message:", e?.message);
     if (e?.status === 429) {
       return NextResponse.json(
         { error: "AIの利用上限に達しました。しばらくしてからお試しください。" },

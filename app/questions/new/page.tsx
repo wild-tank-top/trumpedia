@@ -74,7 +74,10 @@ export default function NewQuestionPage() {
         setContent(json.content);
         setWasPolished(true);
       } else {
-        setAiError((json as { error?: string }).error ?? "AI処理に失敗しました");
+        const errMsg = res.status === 503
+          ? "AI機能は現在メンテナンス中です。しばらくしてからお試しください。"
+          : ((json as { error?: string }).error ?? "AI処理に失敗しました");
+        setAiError(errMsg);
       }
     } catch {
       setAiError("通信エラーが発生しました");

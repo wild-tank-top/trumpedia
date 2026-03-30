@@ -43,7 +43,11 @@ export default function AIChatNavigator({ questions }: Props) {
       const json = await res.json().catch(() => ({})) as { keywords?: string[]; error?: string };
 
       if (!res.ok) {
-        setError(json.error ?? "AI処理に失敗しました");
+        if (res.status === 503) {
+          setError("AI機能は現在メンテナンス中です。通常の検索をご利用ください。");
+        } else {
+          setError(json.error ?? "AI処理に失敗しました");
+        }
         return;
       }
 

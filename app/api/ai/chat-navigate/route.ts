@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
-
-const MODEL = "gemini-2.0-flash-lite";
+import { GEMINI_MODEL, createGeminiClient, checkAIAvailability } from "@/lib/gemini";
 
 let lastGlobalCall = 0;
 const GLOBAL_COOLDOWN_MS = 3_000;
@@ -24,14 +22,18 @@ function buildPrompt(message: string): string {
 }
 
 export async function POST(req: NextRequest) {
-  const apiKey = process.env.GOOGLE_GENERATION_AI_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json({ error: "AI機能が設定されていません" }, { status: 503 });
-  }
-
   const now = Date.now();
   if (now - lastGlobalCall < GLOBAL_COOLDOWN_MS) {
     return NextResponse.json({ error: "少し待ってから再度お試しください。" }, { status: 429 });
+  }
+
+  // ── AI利用可否チェック ────────────────────────────────────────────
+  const available = await checkAIAvailability();
+  if (!available) {
+    return NextResponse.json(
+      { error: "AI機能は現在ご利用いただけません。しばらくしてからお試しください。" },
+      { status: 503 }
+    );
   }
 
   let message: string;
@@ -50,9 +52,9 @@ export async function POST(req: NextRequest) {
   lastGlobalCall = now;
 
   try {
-    const google = createGoogleGenerativeAI({ apiKey });
+    const google = createGeminiClient()!;
     const { text } = await generateText({
-      model: google(MODEL),
+      model: google(GEMINI_MODEL),
       prompt: buildPrompt(message),
       maxOutputTokens: 128,
       temperature: 0.5,
@@ -71,7 +73,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ keywords });
   } catch (err: unknown) {
     const e = err as { status?: number; message?: string };
-    console.error("[chat-navigate]", e?.status, e?.message, err);
+    console.error("[chat-navigate] status:", e?.status, "message:", e?.message);
     if (e?.status === 429) {
       return NextResponse.json(
         { error: "AIの利用上限に達しました。しばらくしてからお試しください。" },
