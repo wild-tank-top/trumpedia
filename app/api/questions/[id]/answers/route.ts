@@ -13,11 +13,11 @@ function requireFellow(session: Session | null) {
 
 function parseBody(body: Record<string, unknown>) {
   const { summary, causeAnalysis, thinking, approach, ngExamples, exceptions, philosophy } = body;
-  if (!summary || !causeAnalysis || !thinking || !approach) return null;
+  if (!summary || !approach) return null;
   return {
     summary: String(summary),
-    causeAnalysis: String(causeAnalysis),
-    thinking: String(thinking),
+    causeAnalysis: causeAnalysis ? String(causeAnalysis) : "",
+    thinking: thinking ? String(thinking) : "",
     approach: String(approach),
     ngExamples: ngExamples ? String(ngExamples) : "",
     exceptions: exceptions ? String(exceptions) : "",

@@ -129,6 +129,11 @@ export default function AnswerForm({
                 <p className="text-xs text-amber-700 mt-1 font-medium">AI分身作成の準備が整いました！</p>
               )}
             </div>
+            <p className="text-xs text-amber-700/80 mt-3 leading-relaxed">
+              100件の回答を達成すると、あなたの思考や演奏理論を学習した
+              <span className="font-semibold">「パーソナルAI分身」</span>
+              作成プロジェクトへ正式に申請が可能になります。
+            </p>
           </div>
         )}
 
@@ -176,10 +181,9 @@ export default function AnswerForm({
         />
       </Field>
 
-      <Field label="原因分析" required hint="なぜその問題が起きているのか？">
+      <Field label="原因分析" hint="なぜその問題が起きているのか？（任意）">
         <textarea
           name="causeAnalysis"
-          required
           rows={3}
           defaultValue={existingAnswer?.causeAnalysis}
           placeholder="例：ハイトーンが出ない主な原因は..."
@@ -187,10 +191,9 @@ export default function AnswerForm({
         />
       </Field>
 
-      <Field label="思考プロセス" required hint="どう考えてこのアプローチに至ったか？">
+      <Field label="思考プロセス" hint="どう考えてこのアプローチに至ったか？（任意）">
         <textarea
           name="thinking"
-          required
           rows={3}
           defaultValue={existingAnswer?.thinking}
           placeholder="例：まずリップスラーで確認し、次に..."
