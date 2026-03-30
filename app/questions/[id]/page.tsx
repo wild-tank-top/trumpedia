@@ -13,7 +13,7 @@ import NotificationReader from "./NotificationReader";
 import ViewTracker from "./ViewTracker";
 import Avatar from "@/app/components/Avatar";
 import { LEVEL_LABELS, LEVEL_STYLES, DEFAULT_LEVEL_STYLE } from "@/lib/levelConfig";
-import { getDefaultImage } from "@/lib/defaultImages";
+import TextThumbnail from "@/app/components/TextThumbnail";
 
 type AnswerWithMeta = Answer & {
   user: { name: string | null; id: string; image: string | null };
@@ -28,12 +28,12 @@ export async function generateMetadata({
   const { id } = await params;
   const question = await prisma.question.findUnique({
     where: { id: Number(id) },
-    select: { title: true, content: true, level: true, thumbnail: true },
+    select: { title: true, content: true, level: true },
   });
   if (!question) return { title: "質問が見つかりません" };
 
   const description = question.content.slice(0, 150);
-  const ogImage = question.thumbnail ?? getDefaultImage(question.level);
+  const ogImage = `/api/og?title=${encodeURIComponent(question.title)}&level=${question.level}`;
 
   return {
     title: question.title,
@@ -169,15 +169,12 @@ export default async function QuestionDetailPage({
         {/* 難易度カラーバー */}
         <div className={`-mx-5 -mt-5 mb-4 h-1 ${ls.bar}`} />
 
-        {/* サムネイル */}
-        {question.thumbnail && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={question.thumbnail}
-            alt={question.title}
-            className="w-full rounded-lg object-cover aspect-video mb-4"
-          />
-        )}
+        {/* タイポグラフィサムネイル */}
+        <TextThumbnail
+          title={question.title}
+          level={question.level}
+          className="rounded-lg mb-4"
+        />
         <div className="flex flex-wrap gap-2 mb-3">
           <span className="text-xs bg-white/70 text-gray-600 border border-gray-200 px-2 py-0.5 rounded-full">
             {question.category}
