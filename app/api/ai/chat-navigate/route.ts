@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
     console.error("[chat-navigate] FAILED | status:", e?.status, "| message:", e?.message);
     if (e?.status === 429) {
       return NextResponse.json(
-        { error: "AIの利用上限に達しました。しばらくしてからお試しください。" },
+        { error: "AI機能は現在メンテナンス中です。しばらくしてからお試しください。" },
         { status: 429 }
       );
     }
