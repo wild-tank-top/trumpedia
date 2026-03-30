@@ -40,13 +40,15 @@ export default function AIChatNavigator({ questions }: Props) {
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({ message }),
       });
-      const json = await res.json().catch(() => ({})) as { keywords?: string[]; error?: string };
+      const json = await res.json().catch(() => ({})) as { keywords?: string[]; error?: string; detail?: string };
 
       if (!res.ok) {
+        // ブラウザコンソールに詳細を出力（デバッグ用）
+        console.error("[AIChatNavigator] API error", res.status, json);
         if (res.status === 503) {
           setError("AI機能は現在メンテナンス中です。通常の検索をご利用ください。");
         } else {
-          setError(json.error ?? "AI処理に失敗しました");
+          setError(json.error ?? `AI処理に失敗しました (HTTP ${res.status})`);
         }
         return;
       }
@@ -64,7 +66,8 @@ export default function AIChatNavigator({ questions }: Props) {
         )
       );
       setFiltered(matched);
-    } catch {
+    } catch (err) {
+      console.error("[AIChatNavigator] fetch error:", err);
       setError("通信エラーが発生しました。もう一度お試しください。");
     } finally {
       setLoading(false);

@@ -64,7 +64,8 @@ export default function NewQuestionPage() {
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({ title, content, category, level }),
       });
-      const json = await res.json().catch(() => ({})) as { title?: string; content?: string; error?: string };
+      const json = await res.json().catch(() => ({})) as { title?: string; content?: string; error?: string; detail?: string };
+      if (!res.ok) console.error("[polish-question] API error", res.status, json);
 
       if (res.ok && json.title && json.content) {
         // 元の値を保存してから上書き

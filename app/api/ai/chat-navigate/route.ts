@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateText } from "ai";
-import { GEMINI_MODEL, createGeminiClient, checkAIAvailability } from "@/lib/gemini";
+import {
+  GEMINI_MODEL,
+  THINKING_DISABLED,
+  createGeminiClient,
+  checkAIAvailability,
+} from "@/lib/gemini";
+
+// Vercel キャッシュを無効化（常に最新のコードを使用）
+export const dynamic = "force-dynamic";
 
 let lastGlobalCall = 0;
 const GLOBAL_COOLDOWN_MS = 3_000;
@@ -27,7 +35,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "少し待ってから再度お試しください。" }, { status: 429 });
   }
 
-  // ── AI利用可否チェック ────────────────────────────────────────────
+  // ── AI 利用可否チェック ───────────────────────────────────────────
   const available = await checkAIAvailability();
   if (!available) {
     return NextResponse.json(
@@ -53,15 +61,20 @@ export async function POST(req: NextRequest) {
 
   try {
     const google = createGeminiClient()!;
+    console.info("[chat-navigate] calling model:", GEMINI_MODEL, "thinking: disabled");
+
     const { text } = await generateText({
       model: google(GEMINI_MODEL),
       prompt: buildPrompt(message),
       maxOutputTokens: 128,
       temperature: 0.5,
+      providerOptions: THINKING_DISABLED,
     });
 
+    console.info("[chat-navigate] response length:", text.length, "text:", text.slice(0, 200));
+
     const jsonMatch = text.match(/\{[\s\S]*?\}/);
-    if (!jsonMatch) throw new Error("JSON not found");
+    if (!jsonMatch) throw new Error("JSON not found in response: " + text.slice(0, 100));
     const parsed = JSON.parse(jsonMatch[0]) as { keywords?: unknown };
 
     const keywords = Array.isArray(parsed.keywords)
@@ -73,7 +86,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ keywords });
   } catch (err: unknown) {
     const e = err as { status?: number; message?: string };
-    console.error("[chat-navigate] status:", e?.status, "message:", e?.message);
+    console.error("[chat-navigate] FAILED | status:", e?.status, "| message:", e?.message);
     if (e?.status === 429) {
       return NextResponse.json(
         { error: "AIの利用上限に達しました。しばらくしてからお試しください。" },
@@ -81,7 +94,10 @@ export async function POST(req: NextRequest) {
       );
     }
     return NextResponse.json(
-      { error: "AI処理に失敗しました。もう一度お試しください。", detail: e?.message },
+      {
+        error: "AI処理に失敗しました。もう一度お試しください。",
+        detail: e?.message ?? String(err),
+      },
       { status: 500 }
     );
   }
