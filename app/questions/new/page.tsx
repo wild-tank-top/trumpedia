@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { CATEGORIES } from "@/lib/constants";
 import { useEffect } from "react";
+import { Sparkles } from "lucide-react";
 
 type FormData = {
   title: string;
@@ -14,46 +15,93 @@ type FormData = {
 };
 
 const LEVELS = [
-  { value: "beginner", label: "初級" },
+  { value: "beginner",     label: "初級" },
   { value: "intermediate", label: "中級" },
-  { value: "advanced", label: "上級" },
+  { value: "advanced",     label: "上級" },
 ];
 
 export default function NewQuestionPage() {
-  const router = useRouter();
+  const router   = useRouter();
   const { status } = useSession();
-  const formRef = useRef<HTMLFormElement>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [showModal, setShowModal] = useState(false);
+  const formRef  = useRef<HTMLFormElement>(null);
+
+  // ── フォーム状態（title/content は AI で書き換えるため controlled） ──
+  const [title,   setTitle]   = useState("");
+  const [content, setContent] = useState("");
+
+  // ── 投稿フロー ────────────────────────────────────────
+  const [loading,     setLoading]     = useState(false);
+  const [error,       setError]       = useState("");
+  const [showModal,   setShowModal]   = useState(false);
   const [pendingData, setPendingData] = useState<FormData | null>(null);
 
+  // ── AI 言語化サポーター ───────────────────────────────
+  const [aiLoading,    setAiLoading]    = useState(false);
+  const [aiError,      setAiError]      = useState("");
+  const [wasPolished,  setWasPolished]  = useState(false);
+  const [prevTitle,    setPrevTitle]    = useState("");
+  const [prevContent,  setPrevContent]  = useState("");
+
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.replace("/login");
-    }
+    if (status === "unauthenticated") router.replace("/login");
   }, [status, router]);
 
-  if (status === "loading" || status === "unauthenticated") {
-    return null;
+  if (status === "loading" || status === "unauthenticated") return null;
+
+  // ── AI リライト ───────────────────────────────────────
+  async function handlePolish() {
+    setAiLoading(true);
+    setAiError("");
+
+    // select は uncontrolled のままなので formRef から読む
+    const form     = formRef.current!;
+    const category = (form.elements.namedItem("category") as HTMLSelectElement).value;
+    const level    = (form.elements.namedItem("level")    as HTMLSelectElement).value;
+
+    try {
+      const res = await fetch("/api/ai/polish-question", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ title, content, category, level }),
+      });
+      const json = await res.json().catch(() => ({})) as { title?: string; content?: string; error?: string };
+
+      if (res.ok && json.title && json.content) {
+        // 元の値を保存してから上書き
+        setPrevTitle(title);
+        setPrevContent(content);
+        setTitle(json.title);
+        setContent(json.content);
+        setWasPolished(true);
+      } else {
+        setAiError((json as { error?: string }).error ?? "AI処理に失敗しました");
+      }
+    } catch {
+      setAiError("通信エラーが発生しました");
+    } finally {
+      setAiLoading(false);
+    }
   }
 
+  function handleUndoPolish() {
+    setTitle(prevTitle);
+    setContent(prevContent);
+    setWasPolished(false);
+    setAiError("");
+  }
+
+  // ── 確認モーダルを開く ────────────────────────────────
   function handlePrepare(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const form = e.currentTarget;
-    const get = (name: string) =>
-      (form.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value;
-
-    setPendingData({
-      title: get("title"),
-      category: get("category"),
-      level: get("level"),
-      content: get("content"),
-    });
+    const form     = e.currentTarget;
+    const category = (form.elements.namedItem("category") as HTMLSelectElement).value;
+    const level    = (form.elements.namedItem("level")    as HTMLSelectElement).value;
+    setPendingData({ title, content, category, level });
     setError("");
     setShowModal(true);
   }
 
+  // ── 投稿実行 ──────────────────────────────────────────
   async function doSubmit() {
     if (!pendingData) return;
     setLoading(true);
@@ -61,23 +109,20 @@ export default function NewQuestionPage() {
 
     try {
       const res = await fetch("/api/questions", {
-        method: "POST",
+        method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(pendingData),
+        body:    JSON.stringify(pendingData),
       });
 
       if (res.ok) {
-        const question = await res.json();
+        const question = await res.json() as { id: number };
         router.push(`/questions/${question.id}`);
       } else {
-        const json = await res.json().catch(() => ({}));
-        const msg = json.error ?? "エラーが発生しました";
-        console.error("[NewQuestion] 投稿失敗:", msg);
-        setError(msg);
+        const json = await res.json().catch(() => ({})) as { error?: string };
+        setError(json.error ?? "エラーが発生しました");
         setLoading(false);
       }
-    } catch (err) {
-      console.error("[NewQuestion] ネットワークエラー:", err);
+    } catch {
       setError("通信エラーが発生しました。もう一度お試しください。");
       setLoading(false);
     }
@@ -91,12 +136,15 @@ export default function NewQuestionPage() {
       </p>
 
       <form ref={formRef} onSubmit={handlePrepare} className="space-y-6">
+        {/* タイトル（controlled） */}
         <Field label="タイトル" required hint="質問文そのものを書いてください（10文字以上推奨）">
           <input
             name="title"
             type="text"
             required
             minLength={10}
+            value={title}
+            onChange={(e) => { setTitle(e.target.value); setWasPolished(false); }}
             placeholder="例：バテない吹き方はありますか？"
             className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
           />
@@ -110,9 +158,7 @@ export default function NewQuestionPage() {
               className="w-full border border-gray-300 rounded-lg p-3 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-400"
             >
               <option value="">選択してください</option>
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
+              {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </Field>
 
@@ -123,22 +169,82 @@ export default function NewQuestionPage() {
               className="w-full border border-gray-300 rounded-lg p-3 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-400"
             >
               <option value="">選択してください</option>
-              {LEVELS.map((l) => (
-                <option key={l.value} value={l.value}>{l.label}</option>
-              ))}
+              {LEVELS.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
             </select>
           </Field>
         </div>
 
+        {/* 詳細（controlled） */}
         <Field label="詳細・補足" required hint="質問の意図や背景、補足情報を書いてください">
           <textarea
             name="content"
             required
             rows={5}
+            value={content}
+            onChange={(e) => { setContent(e.target.value); setWasPolished(false); }}
             placeholder={`例：\n・トランペット歴3年です。高音域になるとすぐにバテてしまいます。\n・スタンプのエチュードに取り組んでいますが、正しいやり方が分かりません。`}
             className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 resize-none"
           />
         </Field>
+
+        {/* ── AI 言語化サポーター ───────────────────────── */}
+        <div className="border border-teal-100 bg-teal-50 rounded-xl p-4">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div>
+              <p className="text-sm font-semibold text-teal-800 flex items-center gap-1.5">
+                <Sparkles size={15} />
+                AI言語化サポーター
+              </p>
+              <p className="text-xs text-teal-600 mt-0.5">
+                入力した内容をプロ向けの丁寧な質問文に整えます
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {wasPolished && (
+                <button
+                  type="button"
+                  onClick={handleUndoPolish}
+                  className="text-xs text-gray-500 hover:text-gray-700 underline"
+                >
+                  元に戻す
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handlePolish}
+                disabled={aiLoading || (!title && !content)}
+                className="flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium px-4 py-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {aiLoading ? (
+                  <>
+                    <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 000 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
+                    </svg>
+                    整えています…
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={13} />
+                    {wasPolished ? "再度整える" : "AIで文章を整える"}
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {wasPolished && !aiError && (
+            <p className="text-xs text-teal-700 mt-2 flex items-center gap-1">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              AIが文章を整えました。内容を確認して必要に応じて編集してください。
+            </p>
+          )}
+          {aiError && (
+            <p className="text-xs text-red-600 mt-2">{aiError}</p>
+          )}
+        </div>
 
         <div className="flex gap-3 pt-2">
           <button
@@ -212,15 +318,9 @@ export default function NewQuestionPage() {
 }
 
 function Field({
-  label,
-  required,
-  hint,
-  children,
+  label, required, hint, children,
 }: {
-  label: string;
-  required?: boolean;
-  hint?: string;
-  children: React.ReactNode;
+  label: string; required?: boolean; hint?: string; children: React.ReactNode;
 }) {
   return (
     <div>

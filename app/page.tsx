@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import CategoryFilter from "./CategoryFilter";
 import SortControl from "./SortControl";
+import AIChatNavigator from "./AIChatNavigator";
 import { LEVEL_LABELS, LEVEL_STYLES, DEFAULT_LEVEL_STYLE } from "@/lib/levelConfig";
 import TextThumbnail from "./components/TextThumbnail";
 import type { Prisma } from "@prisma/client";
@@ -38,22 +39,39 @@ export default async function HomePage({
     ? (orderParam as OrderDir)
     : "desc";
 
-  const questions = await prisma.question.findMany({
-    where: {
-      status: "approved",
-      ...(category ? { category } : {}),
-    },
-    orderBy: buildOrderBy(sort, order),
-    select: {
-      id: true,
-      title: true,
-      content: true,
-      category: true,
-      level: true,
-      createdAt: true,
-      _count: { select: { answers: true } },
-    },
-  });
+  // カテゴリフィルター適用後の質問（一覧表示用）
+  const [questions, allQuestions] = await Promise.all([
+    prisma.question.findMany({
+      where: {
+        status: "approved",
+        ...(category ? { category } : {}),
+      },
+      orderBy: buildOrderBy(sort, order),
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        category: true,
+        level: true,
+        createdAt: true,
+        _count: { select: { answers: true } },
+      },
+    }),
+    // AIナビゲーター用：カテゴリ無関係に全承認済み質問を取得
+    prisma.question.findMany({
+      where: { status: "approved" },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        category: true,
+        level: true,
+        createdAt: true,
+        _count: { select: { answers: true } },
+      },
+    }),
+  ]);
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -75,6 +93,9 @@ export default async function HomePage({
 
       {/* カテゴリフィルター（Client Component） */}
       <CategoryFilter current={category} />
+
+      {/* AIチャットナビゲーター */}
+      <AIChatNavigator questions={allQuestions} />
 
       {/* ソートコントロール + モバイルドロワー */}
       <div className="flex items-center justify-between mb-4">
