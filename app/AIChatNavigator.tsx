@@ -56,15 +56,17 @@ export default function AIChatNavigator({ questions }: Props) {
       const kws = json.keywords ?? [];
       setKeywords(kws);
 
-      // タイトル or 内容にキーワードがいずれか含まれる質問を抽出
-      const matched = questions.filter((q) =>
-        kws.some(
-          (kw) =>
-            q.title.includes(kw) ||
-            q.content.includes(kw) ||
-            q.category.includes(kw)
-        )
-      );
+      // キーワードマッチング:
+      // 完全一致 + 3文字以上のキーワードは先頭2文字でも照合
+      // 例: "ハイトーン" → "ハイ" でも検索（"ハイBb", "ハイF" 等にヒット）
+      function matchesKeyword(q: Question, kw: string): boolean {
+        const text = q.title + " " + q.content + " " + q.category;
+        if (text.includes(kw)) return true;
+        if (kw.length >= 3 && text.includes(kw.slice(0, 2))) return true;
+        return false;
+      }
+
+      const matched = questions.filter((q) => kws.some((kw) => matchesKeyword(q, kw)));
       setFiltered(matched);
     } catch (err) {
       console.error("[AIChatNavigator] fetch error:", err);

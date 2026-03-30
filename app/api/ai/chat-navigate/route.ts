@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
 
     const text = await callGemini({
       prompt: buildPrompt(message),
-      maxOutputTokens: 2048,
+      maxOutputTokens: 256,
       temperature: 0.3,
     });
 
