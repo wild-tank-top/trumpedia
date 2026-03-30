@@ -3,7 +3,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
 import { auth } from "@/auth";
 
-const MODEL = "gemini-2.0-flash-lite";
+const MODEL = "gemini-1.5-flash";
 
 const lastUsed = new Map<string, number>();
 const COOLDOWN_MS = 10_000;
@@ -94,16 +94,16 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ title: newTitle, content: newContent });
   } catch (err: unknown) {
-    console.error("[polish-question]", err);
-    const status = (err as { status?: number })?.status;
-    if (status === 429) {
+    const e = err as { status?: number; message?: string };
+    console.error("[polish-question]", e?.status, e?.message, err);
+    if (e?.status === 429) {
       return NextResponse.json(
         { error: "AIの利用上限に達しました。しばらくしてからお試しください。" },
         { status: 429 }
       );
     }
     return NextResponse.json(
-      { error: "AI処理中にエラーが発生しました。もう一度お試しください。" },
+      { error: "AI処理中にエラーが発生しました。もう一度お試しください。", detail: e?.message },
       { status: 500 }
     );
   }

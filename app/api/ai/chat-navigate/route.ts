@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
 
-const MODEL = "gemini-2.0-flash-lite";
+const MODEL = "gemini-1.5-flash";
 
 let lastGlobalCall = 0;
 const GLOBAL_COOLDOWN_MS = 3_000;
@@ -70,16 +70,16 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ keywords });
   } catch (err: unknown) {
-    console.error("[chat-navigate]", err);
-    const status = (err as { status?: number })?.status;
-    if (status === 429) {
+    const e = err as { status?: number; message?: string };
+    console.error("[chat-navigate]", e?.status, e?.message, err);
+    if (e?.status === 429) {
       return NextResponse.json(
         { error: "AIの利用上限に達しました。しばらくしてからお試しください。" },
         { status: 429 }
       );
     }
     return NextResponse.json(
-      { error: "AI処理に失敗しました。もう一度お試しください。" },
+      { error: "AI処理に失敗しました。もう一度お試しください。", detail: e?.message },
       { status: 500 }
     );
   }
