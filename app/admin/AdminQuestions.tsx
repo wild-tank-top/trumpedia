@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CheckCircle, XCircle, Trash2, ExternalLink, RotateCcw } from "lucide-react";
+import { CheckCircle, XCircle, Trash2, ExternalLink, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
+
+const PER_PAGE = 10;
 
 type Question = {
   id: number;
@@ -40,11 +42,21 @@ type Toast = { id: number; message: string; type: "success" | "error" };
 export default function AdminQuestions({ questions: initial }: { questions: Question[] }) {
   const [questions, setQuestions]       = useState(initial);
   const [filter, setFilter]             = useState<StatusFilter>("pending");
+  const [page, setPage]                 = useState(1);
   const [loadingId, setLoadingId]       = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [toasts, setToasts]             = useState<Toast[]>([]);
 
-  const filtered = filter === "all" ? questions : questions.filter((q) => q.status === filter);
+  const filtered    = filter === "all" ? questions : questions.filter((q) => q.status === filter);
+  const totalPages  = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const currentPage = Math.min(page, totalPages);
+  const paginated   = filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
+
+  function changeFilter(f: StatusFilter) {
+    setFilter(f);
+    setPage(1);
+    setConfirmDeleteId(null);
+  }
 
   function addToast(message: string, type: "success" | "error") {
     const id = Date.now();
@@ -62,7 +74,7 @@ export default function AdminQuestions({ questions: initial }: { questions: Ques
     if (res.ok) {
       setQuestions((prev) => prev.map((q) => (q.id === id ? { ...q, status } : q)));
       addToast(status === "approved" ? "✓ 承認しました" : "✓ 却下しました", "success");
-      setFilter(status);
+      changeFilter(status);
     } else {
       addToast("操作に失敗しました", "error");
     }
@@ -73,7 +85,14 @@ export default function AdminQuestions({ questions: initial }: { questions: Ques
     setLoadingId(id);
     const res = await fetch(`/api/admin/questions/${id}`, { method: "DELETE" });
     if (res.ok) {
-      setQuestions((prev) => prev.filter((q) => q.id !== id));
+      setQuestions((prev) => {
+        const next = prev.filter((q) => q.id !== id);
+        // 削除後に現在ページが空になる場合は1ページ戻す
+        const newFiltered = next.filter((q) => filter === "all" || q.status === filter);
+        const newTotal = Math.max(1, Math.ceil(newFiltered.length / PER_PAGE));
+        if (currentPage > newTotal) setPage(newTotal);
+        return next;
+      });
       addToast("🗑 削除しました", "success");
       setConfirmDeleteId(null);
     } else {
@@ -111,7 +130,7 @@ export default function AdminQuestions({ questions: initial }: { questions: Ques
           return (
             <button
               key={tab.value}
-              onClick={() => setFilter(tab.value)}
+              onClick={() => changeFilter(tab.value)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                 isActive ? tab.activeColor : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
@@ -125,6 +144,19 @@ export default function AdminQuestions({ questions: initial }: { questions: Ques
         })}
       </div>
 
+      {/* ── 件数 + ページ情報 ── */}
+      {filtered.length > 0 && (
+        <div className="flex items-center justify-between mb-3 text-xs text-gray-400">
+          <span>
+            {filtered.length}件中
+            {" "}{(currentPage - 1) * PER_PAGE + 1}〜{Math.min(currentPage * PER_PAGE, filtered.length)}件を表示
+          </span>
+          {totalPages > 1 && (
+            <span>{currentPage} / {totalPages} ページ</span>
+          )}
+        </div>
+      )}
+
       {/* ── 質問一覧 ── */}
       {filtered.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-400 text-sm">
@@ -132,7 +164,7 @@ export default function AdminQuestions({ questions: initial }: { questions: Ques
         </div>
       ) : (
         <div className="space-y-2.5">
-          {filtered.map((q) => {
+          {paginated.map((q) => {
             const sc       = STATUS_CONFIG[q.status] ?? STATUS_CONFIG.pending;
             const isPending  = q.status === "pending";
             const isRejected = q.status === "rejected";
@@ -269,6 +301,41 @@ export default function AdminQuestions({ questions: initial }: { questions: Ques
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* ── ページネーション ── */}
+      {totalPages > 1 && (
+        <div className="mt-4 flex items-center justify-center gap-1.5">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronLeft size={15} />
+          </button>
+
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+            <button
+              key={p}
+              onClick={() => setPage(p)}
+              className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${
+                p === currentPage
+                  ? "bg-gray-800 text-white shadow-sm"
+                  : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              {p}
+            </button>
+          ))}
+
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronRight size={15} />
+          </button>
         </div>
       )}
     </div>
