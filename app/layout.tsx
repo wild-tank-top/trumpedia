@@ -90,9 +90,10 @@ export default async function RootLayout({
               <Image
                 src="/trumpedia-logo.png"
                 alt="Trumpedia"
-                height={80}
-                width={147}
-                className="h-20 w-auto"
+                height={56}
+                width={196}
+                className="h-10 sm:h-14 w-auto"
+                sizes="(max-width: 640px) 140px, 196px"
                 priority
               />
             </Link>
