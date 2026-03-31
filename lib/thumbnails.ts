@@ -13,6 +13,11 @@ export const THUMBNAIL_ASSETS = [
   "/assets/thumbnails/Gemini_Generated_Image_uoxqyauoxqyauoxq.png",
   "/assets/thumbnails/Gemini_Generated_Image_vjho38vjho38vjho.png",
   "/assets/thumbnails/Gemini_Generated_Image_w2q3c9w2q3c9w2q3.png",
+  "/assets/thumbnails/Gemini_Generated_Image_4yysc44yysc44yys.png",
+  "/assets/thumbnails/assets001.png",
+  "/assets/thumbnails/assets002.png",
+  "/assets/thumbnails/assets003.png",
+  "/assets/thumbnails/assets004.png",
 ] as const;
 
 export type ThumbnailAsset = (typeof THUMBNAIL_ASSETS)[number];
@@ -21,4 +26,12 @@ export type ThumbnailAsset = (typeof THUMBNAIL_ASSETS)[number];
 export function isManagedThumbnail(path: string | null | undefined): boolean {
   if (!path) return false;
   return path.startsWith("/assets/thumbnails/");
+}
+
+/**
+ * 質問IDから決定論的にアセットを自動選択する。
+ * 同じIDは常に同じ画像を返す（ランダムではない）。
+ */
+export function getAutoThumbnail(questionId: number): string {
+  return THUMBNAIL_ASSETS[questionId % THUMBNAIL_ASSETS.length];
 }

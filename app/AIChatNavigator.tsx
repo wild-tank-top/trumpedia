@@ -6,7 +6,7 @@ import { Sparkles, X, Search } from "lucide-react";
 import TextThumbnail from "./components/TextThumbnail";
 import ThumbnailImage from "./components/ThumbnailImage";
 import { LEVEL_LABELS, LEVEL_STYLES, DEFAULT_LEVEL_STYLE } from "@/lib/levelConfig";
-import { isManagedThumbnail } from "@/lib/thumbnails";
+import { isManagedThumbnail, getAutoThumbnail } from "@/lib/thumbnails";
 
 type Question = {
   id: number;
@@ -237,11 +237,11 @@ export default function AIChatNavigator({ questions }: Props) {
                             className={`block bg-white rounded-xl border shadow-sm ${s.cardBorder} ${s.cardHover} transition-all overflow-hidden`}
                           >
                             <div className={`h-1 w-full ${s.bar}`} />
-                            {isManagedThumbnail(q.thumbnail) ? (
-                              <ThumbnailImage src={q.thumbnail!} title={q.title} category={q.category} />
-                            ) : (
-                              <TextThumbnail title={q.title} level={q.level} />
-                            )}
+                            <ThumbnailImage
+                              src={isManagedThumbnail(q.thumbnail) ? q.thumbnail! : getAutoThumbnail(q.id)}
+                              title={q.title}
+                              category={q.category}
+                            />
                             <div className="p-3">
                               <div className="flex flex-wrap gap-1 mb-1.5">
                                 <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">

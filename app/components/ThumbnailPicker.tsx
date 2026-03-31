@@ -113,7 +113,7 @@ export default function ThumbnailPicker({ value, onChange, previewTitle }: Props
       </div>
 
       <p className="text-[11px] text-gray-400">
-        「自動」を選ぶとタイトルからキーワードを抽出したテキストサムネイルが生成されます
+        「自動」を選ぶと質問IDに基づいてアセットから画像が自動で割り当てられます
       </p>
     </div>
   );
