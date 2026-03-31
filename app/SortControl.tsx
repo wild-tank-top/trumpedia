@@ -54,18 +54,23 @@ export default function SortControl({
   return (
     <>
       {/* ── PC: 横並びボタン ─────────────────────────────── */}
-      <div className="hidden sm:flex items-center gap-1.5">
-        <span className="text-xs text-gray-400 mr-1">並び替え</span>
+      <div className={`hidden sm:flex items-center gap-1.5 transition-opacity duration-150 ${isPending ? "opacity-60" : "opacity-100"}`}>
+        <span className="text-xs text-gray-400 mr-1 flex items-center gap-1">
+          {isPending && (
+            <span className="inline-block w-3 h-3 rounded-full border-2 border-teal-300 border-t-teal-600 animate-spin" />
+          )}
+          並び替え
+        </span>
         {SORT_OPTIONS.map(({ key, label }) => (
           <button
             key={key}
             onClick={() => handleClick(key)}
             disabled={isPending}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
               currentSort === key
-                ? "bg-teal-600 text-white shadow-sm"
+                ? "bg-teal-600 text-white shadow-sm ring-2 ring-teal-300 ring-offset-1"
                 : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            } disabled:opacity-50`}
+            } disabled:cursor-not-allowed`}
           >
             {label}{dirIcon(key)}
           </button>
@@ -76,11 +81,16 @@ export default function SortControl({
       <div className="sm:hidden flex justify-end mb-3">
         <button
           onClick={() => setDrawerOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+          disabled={isPending}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all ${isPending ? "opacity-60" : ""}`}
         >
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 7h18M6 12h12M10 17h4" />
-          </svg>
+          {isPending ? (
+            <span className="w-3.5 h-3.5 rounded-full border-2 border-teal-300 border-t-teal-600 animate-spin inline-block" />
+          ) : (
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 7h18M6 12h12M10 17h4" />
+            </svg>
+          )}
           並び替え：{SORT_OPTIONS.find((o) => o.key === currentSort)?.label}
           {currentOrder === "desc" ? " ↓" : " ↑"}
         </button>
