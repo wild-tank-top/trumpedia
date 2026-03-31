@@ -49,7 +49,7 @@ export async function PUT(
   }
 
   const body = await req.json();
-  const { title, category, level, content } = body;
+  const { title, category, level, content, thumbnail } = body;
 
   if (!title || !category || !level || !content) {
     return NextResponse.json({ error: "必須項目が不足しています" }, { status: 400 });
@@ -57,7 +57,13 @@ export async function PUT(
 
   const updated = await prisma.question.update({
     where: { id: Number(id) },
-    data: { title, category, level, content },
+    data: {
+      title,
+      category,
+      level,
+      content,
+      ...(thumbnail !== undefined ? { thumbnail: thumbnail || null } : {}),
+    },
   });
   return NextResponse.json(updated);
 }

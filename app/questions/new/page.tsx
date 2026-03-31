@@ -5,13 +5,15 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { CATEGORIES } from "@/lib/constants";
 import { useEffect } from "react";
-import { Sparkles } from "lucide-react";
+import { Sparkles, ImageIcon, ChevronDown } from "lucide-react";
+import ThumbnailPicker from "@/app/components/ThumbnailPicker";
 
 type FormData = {
   title: string;
   category: string;
   level: string;
   content: string;
+  thumbnail: string;
 };
 
 const LEVELS = [
@@ -34,6 +36,8 @@ export default function NewQuestionPage() {
   const [error,       setError]       = useState("");
   const [showModal,   setShowModal]   = useState(false);
   const [pendingData, setPendingData] = useState<FormData | null>(null);
+  const [thumbnail,   setThumbnail]   = useState("");
+  const [showPicker,  setShowPicker]  = useState(false);
 
   // ── AI 言語化サポーター ───────────────────────────────
   const [aiLoading,    setAiLoading]    = useState(false);
@@ -100,7 +104,7 @@ export default function NewQuestionPage() {
     const form     = e.currentTarget;
     const category = (form.elements.namedItem("category") as HTMLSelectElement).value;
     const level    = (form.elements.namedItem("level")    as HTMLSelectElement).value;
-    setPendingData({ title, content, category, level });
+    setPendingData({ title, content, category, level, thumbnail });
     setError("");
     setShowModal(true);
   }
@@ -191,6 +195,38 @@ export default function NewQuestionPage() {
           />
         </Field>
 
+        {/* ── アイキャッチ画像 ─────────────────────────── */}
+        <div className="border border-gray-200 rounded-xl overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setShowPicker((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
+          >
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <ImageIcon size={15} className="text-gray-400" />
+              アイキャッチ画像（任意）
+              {thumbnail && (
+                <span className="text-[11px] bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-normal">
+                  選択済み
+                </span>
+              )}
+            </div>
+            <ChevronDown
+              size={15}
+              className={`text-gray-400 transition-transform ${showPicker ? "rotate-180" : ""}`}
+            />
+          </button>
+          {showPicker && (
+            <div className="p-4">
+              <ThumbnailPicker
+                value={thumbnail}
+                onChange={setThumbnail}
+                previewTitle={title}
+              />
+            </div>
+          )}
+        </div>
+
         {/* ── AI 言語化サポーター ───────────────────────── */}
         <div className="border border-teal-100 bg-teal-50 rounded-xl p-4">
           <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -280,12 +316,23 @@ export default function NewQuestionPage() {
                 {pendingData.category}　／　{LEVELS.find(l => l.value === pendingData.level)?.label ?? pendingData.level}
               </p>
               <p className="text-xs text-gray-500 line-clamp-3 leading-relaxed">{pendingData.content}</p>
-              <p className="text-xs text-gray-400 flex items-center gap-1">
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909" />
-                </svg>
-                サムネイルは自動で割り当てられます
-              </p>
+              {pendingData.thumbnail ? (
+                <div className="relative w-full aspect-video rounded-lg overflow-hidden mt-1">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={pendingData.thumbnail} alt="" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <p className="absolute bottom-2 left-2 right-2 text-white text-xs font-bold line-clamp-2 drop-shadow">
+                    {pendingData.title}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400 flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909" />
+                  </svg>
+                  サムネイルは自動で割り当てられます
+                </p>
+              )}
             </div>
 
             {error && <p className="text-red-500 text-sm mb-3">{error}</p>}

@@ -14,6 +14,8 @@ import ViewTracker from "./ViewTracker";
 import Avatar from "@/app/components/Avatar";
 import { LEVEL_LABELS, LEVEL_STYLES, DEFAULT_LEVEL_STYLE } from "@/lib/levelConfig";
 import TextThumbnail from "@/app/components/TextThumbnail";
+import ThumbnailImage from "@/app/components/ThumbnailImage";
+import { isManagedThumbnail } from "@/lib/thumbnails";
 
 type AnswerWithMeta = Answer & {
   user: { name: string | null; id: string; image: string | null };
@@ -28,12 +30,14 @@ export async function generateMetadata({
   const { id } = await params;
   const question = await prisma.question.findUnique({
     where: { id: Number(id) },
-    select: { title: true, content: true, level: true },
+    select: { title: true, content: true, level: true, thumbnail: true },
   });
   if (!question) return { title: "質問が見つかりません" };
 
   const description = question.content.slice(0, 150);
-  const ogImage = `/api/og?title=${encodeURIComponent(question.title)}&level=${question.level}`;
+  const thumbParam = isManagedThumbnail(question.thumbnail)
+    ? `&thumbnail=${encodeURIComponent(question.thumbnail!)}` : "";
+  const ogImage = `/api/og?title=${encodeURIComponent(question.title)}&level=${question.level}${thumbParam}`;
 
   return {
     title: question.title,
@@ -169,12 +173,21 @@ export default async function QuestionDetailPage({
         {/* 難易度カラーバー */}
         <div className={`-mx-5 -mt-5 mb-4 h-1 ${ls.bar}`} />
 
-        {/* タイポグラフィサムネイル */}
-        <TextThumbnail
-          title={question.title}
-          level={question.level}
-          className="rounded-lg mb-4"
-        />
+        {/* サムネイル */}
+        {isManagedThumbnail(question.thumbnail) ? (
+          <ThumbnailImage
+            src={question.thumbnail!}
+            title={question.title}
+            category={question.category}
+            className="rounded-lg mb-4"
+          />
+        ) : (
+          <TextThumbnail
+            title={question.title}
+            level={question.level}
+            className="rounded-lg mb-4"
+          />
+        )}
         <div className="flex flex-wrap gap-2 mb-3">
           <span className="text-xs bg-white/70 text-gray-600 border border-gray-200 px-2 py-0.5 rounded-full">
             {question.category}

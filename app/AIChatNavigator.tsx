@@ -4,7 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { Sparkles, X, Search } from "lucide-react";
 import TextThumbnail from "./components/TextThumbnail";
+import ThumbnailImage from "./components/ThumbnailImage";
 import { LEVEL_LABELS, LEVEL_STYLES, DEFAULT_LEVEL_STYLE } from "@/lib/levelConfig";
+import { isManagedThumbnail } from "@/lib/thumbnails";
 
 type Question = {
   id: number;
@@ -13,6 +15,7 @@ type Question = {
   category: string;
   level: string;
   createdAt: Date | string;
+  thumbnail?: string | null;
   _count: { answers: number };
 };
 
@@ -234,7 +237,11 @@ export default function AIChatNavigator({ questions }: Props) {
                             className={`block bg-white rounded-xl border shadow-sm ${s.cardBorder} ${s.cardHover} transition-all overflow-hidden`}
                           >
                             <div className={`h-1 w-full ${s.bar}`} />
-                            <TextThumbnail title={q.title} level={q.level} />
+                            {isManagedThumbnail(q.thumbnail) ? (
+                              <ThumbnailImage src={q.thumbnail!} title={q.title} category={q.category} />
+                            ) : (
+                              <TextThumbnail title={q.title} level={q.level} />
+                            )}
                             <div className="p-3">
                               <div className="flex flex-wrap gap-1 mb-1.5">
                                 <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">

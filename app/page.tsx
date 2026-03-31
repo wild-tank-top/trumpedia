@@ -7,6 +7,8 @@ import SearchBox from "./SearchBox";
 import Pagination from "./Pagination";
 import { LEVEL_LABELS, LEVEL_STYLES, DEFAULT_LEVEL_STYLE } from "@/lib/levelConfig";
 import TextThumbnail from "./components/TextThumbnail";
+import ThumbnailImage from "./components/ThumbnailImage";
+import { isManagedThumbnail } from "@/lib/thumbnails";
 import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -71,7 +73,7 @@ export default async function HomePage({
       take:  ITEMS_PER_PAGE,
       select: {
         id: true, title: true, content: true,
-        category: true, level: true, createdAt: true,
+        category: true, level: true, createdAt: true, thumbnail: true,
         _count: { select: { answers: true } },
       },
     }),
@@ -82,7 +84,7 @@ export default async function HomePage({
       orderBy: { createdAt: "desc" },
       select: {
         id: true, title: true, content: true,
-        category: true, level: true, createdAt: true,
+        category: true, level: true, createdAt: true, thumbnail: true,
         _count: { select: { answers: true } },
       },
     }),
@@ -191,7 +193,11 @@ export default async function HomePage({
                   className={`block bg-white rounded-xl border shadow-sm ${s.cardBorder} ${s.cardHover} transition-all overflow-hidden`}
                 >
                   <div className={`h-1 w-full ${s.bar}`} />
-                  <TextThumbnail title={q.title} level={q.level} />
+                  {isManagedThumbnail(q.thumbnail) ? (
+                    <ThumbnailImage src={q.thumbnail!} title={q.title} category={q.category} />
+                  ) : (
+                    <TextThumbnail title={q.title} level={q.level} />
+                  )}
                   <div className="p-4">
                     <div className="flex flex-wrap gap-1.5 mb-2">
                       <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">

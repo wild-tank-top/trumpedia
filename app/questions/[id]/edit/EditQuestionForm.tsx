@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CATEGORIES } from "@/lib/constants";
+import { ImageIcon, ChevronDown } from "lucide-react";
+import ThumbnailPicker from "@/app/components/ThumbnailPicker";
 
 type Question = {
   id: number;
@@ -11,6 +13,7 @@ type Question = {
   category: string;
   level: string;
   content: string;
+  thumbnail?: string | null;
 };
 
 const LEVELS = [
@@ -21,8 +24,11 @@ const LEVELS = [
 
 export default function EditQuestionForm({ question }: { question: Question }) {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [loading, setLoading]     = useState(false);
+  const [error, setError]         = useState("");
+  const [title, setTitle]         = useState(question.title);
+  const [thumbnail, setThumbnail] = useState(question.thumbnail ?? "");
+  const [showPicker, setShowPicker] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -34,10 +40,11 @@ export default function EditQuestionForm({ question }: { question: Question }) {
       (form.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value;
 
     const data = {
-      title: get("title"),
+      title,
       category: get("category"),
-      level: get("level"),
-      content: get("content"),
+      level:    get("level"),
+      content:  get("content"),
+      thumbnail,
     };
 
     const res = await fetch(`/api/questions/${question.id}`, {
@@ -60,10 +67,7 @@ export default function EditQuestionForm({ question }: { question: Question }) {
     <>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">質問を編集する</h1>
-        <Link
-          href={`/questions/${question.id}`}
-          className="text-sm text-gray-400 hover:text-gray-600"
-        >
+        <Link href={`/questions/${question.id}`} className="text-sm text-gray-400 hover:text-gray-600">
           ← 戻る
         </Link>
       </div>
@@ -75,7 +79,8 @@ export default function EditQuestionForm({ question }: { question: Question }) {
             type="text"
             required
             minLength={10}
-            defaultValue={question.title}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
             className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
           />
         </Field>
@@ -120,6 +125,38 @@ export default function EditQuestionForm({ question }: { question: Question }) {
           />
         </Field>
 
+        {/* ── アイキャッチ画像 ── */}
+        <div className="border border-gray-200 rounded-xl overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setShowPicker((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
+          >
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <ImageIcon size={15} className="text-gray-400" />
+              アイキャッチ画像（任意）
+              {thumbnail && (
+                <span className="text-[11px] bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-normal">
+                  選択済み
+                </span>
+              )}
+            </div>
+            <ChevronDown
+              size={15}
+              className={`text-gray-400 transition-transform ${showPicker ? "rotate-180" : ""}`}
+            />
+          </button>
+          {showPicker && (
+            <div className="p-4">
+              <ThumbnailPicker
+                value={thumbnail}
+                onChange={setThumbnail}
+                previewTitle={title}
+              />
+            </div>
+          )}
+        </div>
+
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
         <div className="flex gap-3 pt-2">
@@ -143,15 +180,9 @@ export default function EditQuestionForm({ question }: { question: Question }) {
 }
 
 function Field({
-  label,
-  required,
-  hint,
-  children,
+  label, required, hint, children,
 }: {
-  label: string;
-  required?: boolean;
-  hint?: string;
-  children: React.ReactNode;
+  label: string; required?: boolean; hint?: string; children: React.ReactNode;
 }) {
   return (
     <div>
