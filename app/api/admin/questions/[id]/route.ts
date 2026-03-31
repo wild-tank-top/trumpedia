@@ -33,3 +33,37 @@ export async function PATCH(
     return NextResponse.json({ error: "ステータスの更新に失敗しました" }, { status: 500 });
   }
 }
+
+// DELETE /api/admin/questions/[id] - 質問を完全削除（adminのみ・rejected限定）
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  if (!session || session.user.role !== "admin") {
+    return NextResponse.json({ error: "管理者権限が必要です" }, { status: 403 });
+  }
+
+  const { id } = await params;
+
+  try {
+    const question = await prisma.question.findUnique({
+      where: { id: Number(id) },
+      select: { status: true },
+    });
+
+    if (!question) {
+      return NextResponse.json({ error: "質問が見つかりません" }, { status: 404 });
+    }
+    if (question.status !== "rejected") {
+      return NextResponse.json({ error: "却下済みの質問のみ削除できます" }, { status: 400 });
+    }
+
+    // Cascade delete: Answer / QuestionSupplement / Notification も自動削除される
+    await prisma.question.delete({ where: { id: Number(id) } });
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("[DELETE /api/admin/questions]", err);
+    return NextResponse.json({ error: "削除に失敗しました" }, { status: 500 });
+  }
+}
