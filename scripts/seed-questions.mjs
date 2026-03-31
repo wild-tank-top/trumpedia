@@ -28,7 +28,7 @@ const questions = [
     title: "スラーで長3度を跳躍するとき、上の音が必ずひっくり返ってしまいます",
     content:
       "トランペット歴2年です。中音域のソから上のシへのスラー（長3度上行）で、シが「ぷっ」とひっくり返ることが多く、特に速いテンポで顕著です。アンブシュアを意識すると余計に緊張してしまいます。息の圧力を変えるのか、口の中の形（舌の位置）を変えるべきなのか、どのように練習すればよいでしょうか。",
-    category: "テクニック",
+    category: "呼吸・身体・奏法",
     level: "beginner",
     status: "approved",
     createdAt: randomRecentDate(6),
@@ -37,7 +37,7 @@ const questions = [
     title: "本番直前に唇が震えて息も上手く入らなくなります。どう対処していますか？",
     content:
       "吹奏楽部で3年目です。普段の練習では問題なく吹けているのに、定期演奏会の直前になると唇が細かく震え、ロングトーンすらまともにできなくなります。深呼吸は試しましたが焼け石に水で、本番中ずっと頭が真っ白な状態です。経験豊富な方はどんなルーティンで本番に臨んでいますか？",
-    category: "メンタル",
+    category: "メンタル・考え方・向き合い方",
     level: "beginner",
     status: "approved",
     createdAt: randomRecentDate(2),
@@ -46,7 +46,7 @@ const questions = [
     title: "ダブルタンギングを速くすると「タ」と「カ」の粒が不均等になる",
     content:
       "ジャズビッグバンドでリードトランペットを担当しています。BPM160以上のフレーズでダブルタンギングを使うと、「タ」は明瞭なのに「カ」が小さく丸くなってしまいます。「カ」単体でゆっくり練習しても、テンポを上げると途端に崩れます。「カ」の音を鍛えるための具体的な練習メニューを教えてください。",
-    category: "テクニック",
+    category: "タンギング・発音",
     level: "intermediate",
     status: "approved",
     createdAt: randomRecentDate(4),
@@ -55,7 +55,7 @@ const questions = [
     title: "ハイBbより上の音域を狙うと息が続かずすぐバテる",
     content:
       "オーケストラのエキストラとして出演する機会が増え、ハイB♭（上第2線のシ♭）以上の音符を長時間吹き続けることが求められるようになりました。単発では出せるのに、曲の中で継続すると30〜40分で唇が機能しなくなります。スタミナを維持するための息の使い方・アンブシュア管理を知りたいです。",
-    category: "音色",
+    category: "ハイトーン",
     level: "advanced",
     status: "approved",
     createdAt: randomRecentDate(1),
@@ -64,7 +64,7 @@ const questions = [
     title: "楽器を持ち替えたらピストンが重くなり速いパッセージで詰まります",
     content:
       "先日、学生時代から使っていたYAMAHA YTR-2335から、中古のBach Stradivarius 37に買い替えました。音色には満足しているのですが、ピストンの重さに慣れず、16分音符が続くパッセージでピストンが戻り切らずに音がつながってしまいます。新しい楽器に早く慣れるコツや、指のトレーニング方法はありますか？",
-    category: "楽器選び",
+    category: "楽器・マウスピース",
     level: "intermediate",
     status: "approved",
     createdAt: randomRecentDate(5),
@@ -73,7 +73,7 @@ const questions = [
     title: "音を小さくしようとするとpの音量でピッチが常にフラットになる",
     content:
       "室内楽やアンサンブルでpのダイナミクスを指示されると、音程が安定せず周りの楽器とひどくぶつかってしまいます。息の量を減らすとアンブシュアが緩み、ピッチが下がる一方でmpに戻すとピッチは安定します。小さい音量でも正確な音程を保つための練習法・息の使い方を教えてください。",
-    category: "音程",
+    category: "音程・ソルフェージュ",
     level: "intermediate",
     status: "approved",
     createdAt: randomRecentDate(3),
@@ -82,7 +82,7 @@ const questions = [
     title: "毎日2時間練習しているのに半年間まったく上達している実感がない",
     content:
       "社会人アマチュアとして週に5日、1日2時間の練習を6ヶ月間継続していますが、録音を聞き返しても半年前と変わっている気がしません。基礎練（ロングトーン・スケール・リップスラー）を中心にやっていますが、何かが根本的に間違っているのかもしれません。停滞を突破するためにどういう視点で練習を見直せばよいでしょうか。",
-    category: "練習法",
+    category: "メンタル・考え方・向き合い方",
     level: "beginner",
     status: "approved",
     createdAt: randomRecentDate(7),
@@ -91,7 +91,7 @@ const questions = [
     title: "フラジオ域（ハイF以上）でアタックするとき音頭が安定しない",
     content:
       "ジャズのソロでフラジオ（ハイF～HighC）を取り入れたいのですが、音の出始めが毎回ギャンブルで、本番でフラジオをフィーチャーするのが怖い状態です。特にフォルテで吹き始めるときにアタックが決まりません。フラジオのアタックを安定させるためのルーティン・コンセプトがあれば教えてください。",
-    category: "テクニック",
+    category: "ハイトーン",
     level: "advanced",
     status: "approved",
     createdAt: randomRecentDate(2),
@@ -100,7 +100,7 @@ const questions = [
     title: "マウスピースのリムサイズを変えると音色は変わるが何を基準に選べばいい？",
     content:
       "現在Bach 3Cを使っていますが、知人に「もう少し浅いカップを試してみては」と言われ、1.5Cと7Cを試奏しました。確かに音色が変わるのですが、自分に何が合っているか判断できません。内径・カップの深さ・スロートの違いが演奏にどう影響するか、選択の基準になる考え方を教えてください。",
-    category: "楽器選び",
+    category: "楽器・マウスピース",
     level: "beginner",
     status: "approved",
     createdAt: randomRecentDate(5),
@@ -109,7 +109,7 @@ const questions = [
     title: "曲の途中に長い休みがあると再び入るタイミングでアンブシュアが固まっている",
     content:
       "オーケストラ曲で50小節以上の休みの後にソロで入る箇所があり、休んでいる間にアンブシュアが完全にほぐれてしまい、入りで唇が震えたり音が裏返ったりします。ブレスのやり直しや指だけで鍵を押さえて待機するなど試しましたが効果がありません。長い休みを挟んだ後の入りを安定させる方法を知りたいです。",
-    category: "メンタル",
+    category: "メンタル・考え方・向き合い方",
     level: "advanced",
     status: "approved",
     createdAt: randomRecentDate(1),
