@@ -7,6 +7,7 @@ import HeaderNav from "./HeaderNav";
 import NotificationBanner from "./components/NotificationBanner";
 import Providers from "./providers";
 import Link from "next/link";
+import Image from "next/image";
 
 const notoSansJP = Noto_Sans_JP({
   weight: ["400", "500", "700", "900"],
@@ -85,9 +86,16 @@ export default async function RootLayout({
       <body className="bg-gray-50 text-gray-800 min-h-screen">
         <header className="bg-white border-b border-gray-200 sticky top-0 z-50 relative">
           <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-            <a href="/" className="text-xl font-bold text-amber-600 tracking-tight shrink-0">
-              🎺 Trumpedia
-            </a>
+            <Link href="/" className="shrink-0">
+              <Image
+                src="/trumpedia-logo.png"
+                alt="Trumpedia"
+                height={40}
+                width={160}
+                className="h-10 w-auto"
+                priority
+              />
+            </Link>
             <HeaderNav session={session} unreadCount={unreadCount} />
           </div>
         </header>
