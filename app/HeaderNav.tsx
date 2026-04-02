@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -8,7 +8,7 @@ import type { Session } from "next-auth";
 import Avatar from "@/app/components/Avatar";
 import {
   Menu, X, Users, PenLine, Settings,
-  LogOut, LogIn, UserPlus, LayoutDashboard, ListOrdered,
+  LogOut, LogIn, UserPlus, LayoutDashboard, ListOrdered, User,
 } from "lucide-react";
 
 const ROLE_LABELS = {
@@ -26,17 +26,28 @@ export default function HeaderNav({
   session: Session | null;
   unreadCount?: number;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false);           // モバイルメニュー
+  const [dropOpen, setDropOpen] = useState(false);   // PCアバタードロップダウン
   const pathname = usePathname();
+  const dropRef = useRef<HTMLDivElement>(null);
 
   // ページ遷移でメニューを閉じる
-  useEffect(() => { setOpen(false); }, [pathname]);
+  useEffect(() => { setOpen(false); setDropOpen(false); }, [pathname]);
 
-  // Escキーでメニューを閉じる
+  // Escキー / 外側クリックでドロップダウンを閉じる
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setDropOpen(false); };
+    const onClickOutside = (e: MouseEvent) => {
+      if (dropRef.current && !dropRef.current.contains(e.target as Node)) {
+        setDropOpen(false);
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("mousedown", onClickOutside);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("mousedown", onClickOutside);
+    };
   }, []);
 
   const role = (session?.user?.role ?? "guest") as Role;
@@ -63,57 +74,65 @@ export default function HeaderNav({
               質問を投稿
             </Link>
 
-            <Link
-              href="/my-questions"
-              className="text-sm text-gray-600 hover:text-teal-600 px-3 py-1.5 rounded-lg hover:bg-teal-50 transition-colors"
-            >
-              自分の質問
-            </Link>
-
-            {(role === "fellow" || role === "admin") && (
-              <Link
-                href="/dashboard"
-                className="text-sm text-amber-600 hover:text-amber-700 px-3 py-1.5 rounded-lg hover:bg-amber-50 transition-colors"
-              >
-                Dashboard
-              </Link>
-            )}
-
-            {role === "admin" && (
-              <Link
-                href="/admin"
-                className="text-sm text-red-600 hover:text-red-700 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
-              >
-                管理
-              </Link>
-            )}
-
-            {/* ユーザーエリア */}
-            <div className="flex items-center gap-2 pl-2 ml-1 border-l border-gray-200">
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badge.color}`}>
-                {badge.label}
-              </span>
-              <div className="relative">
-                <Link
-                  href={`/contributors/${session.user.id}`}
-                  className="hover:opacity-80 transition-opacity block"
-                  title={session.user.name ?? "プロフィール"}
-                >
-                  <Avatar src={session.user.image} name={session.user.name} size="sm" />
-                </Link>
-                {unreadCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
-                )}
-              </div>
-              <span className="text-sm text-gray-700 hidden md:inline max-w-[100px] truncate">
-                {session.user.name}
-              </span>
+            {/* アバター + ドロップダウン */}
+            <div className="relative ml-1" ref={dropRef}>
               <button
-                onClick={() => signOut({ callbackUrl: "/" })}
-                className="text-xs text-gray-400 hover:text-gray-700 transition-colors whitespace-nowrap"
+                onClick={() => setDropOpen((v) => !v)}
+                className="relative flex items-center gap-2 pl-2 border-l border-gray-200 hover:opacity-80 transition-opacity"
+                aria-haspopup="true"
+                aria-expanded={dropOpen}
               >
-                ログアウト
+                <Avatar src={session.user.image} name={session.user.name} size="sm" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-0 left-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
+                )}
               </button>
+
+              {/* ドロップダウンメニュー */}
+              {dropOpen && (
+                <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-200 rounded-xl shadow-lg py-1.5 z-50">
+                  {/* ユーザー情報 */}
+                  <div className="px-4 py-2.5 border-b border-gray-100">
+                    <p className="text-sm font-semibold text-gray-800 truncate">
+                      {session.user.name ?? "ユーザー"}
+                    </p>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badge.color}`}>
+                      {badge.label}
+                    </span>
+                  </div>
+
+                  {/* メニュー項目 */}
+                  <div className="py-1">
+                    <DropdownLink href={`/contributors/${session.user.id}`} icon={<User size={14} />}>
+                      プロフィール
+                    </DropdownLink>
+                    <DropdownLink href="/my-questions" icon={<ListOrdered size={14} />}>
+                      自分の質問
+                    </DropdownLink>
+                    {(role === "fellow" || role === "admin") && (
+                      <DropdownLink href="/dashboard" icon={<LayoutDashboard size={14} />}>
+                        Dashboard
+                      </DropdownLink>
+                    )}
+                    {role === "admin" && (
+                      <DropdownLink href="/admin" icon={<Settings size={14} />}>
+                        管理画面
+                      </DropdownLink>
+                    )}
+                  </div>
+
+                  {/* ログアウト */}
+                  <div className="border-t border-gray-100 py-1">
+                    <button
+                      onClick={() => signOut({ callbackUrl: "/" })}
+                      className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors text-left"
+                    >
+                      <LogOut size={14} />
+                      ログアウト
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </>
         ) : (
@@ -231,6 +250,27 @@ export default function HeaderNav({
         </nav>
       </div>
     </>
+  );
+}
+
+// ── PCドロップダウン内リンク ───────────────────────────────────
+function DropdownLink({
+  href,
+  icon,
+  children,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+    >
+      <span className="text-gray-400">{icon}</span>
+      {children}
+    </Link>
   );
 }
 
