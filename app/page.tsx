@@ -10,6 +10,7 @@ import TextThumbnail from "./components/TextThumbnail";
 import ThumbnailImage from "./components/ThumbnailImage";
 import { isManagedThumbnail, getAutoThumbnail } from "@/lib/thumbnails";
 import type { Prisma } from "@prisma/client";
+import { expandSearchTerms } from "@/lib/searchUtils";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,27 @@ type OrderDir = "asc" | "desc";
 
 const VALID_SORTS:  SortKey[]  = ["createdAt", "views", "answers", "lastAnsweredAt"];
 const VALID_ORDERS: OrderDir[] = ["asc", "desc"];
+
+/**
+ * 検索クエリを複数トークンに分割し、同義語展開した上で Prisma WHERE 条件を構築する。
+ * - トークン間は AND（すべてのトークンにヒットする質問のみ返す）
+ * - 各トークン内は OR（同義語のどれかが title / content / category に含まれればヒット）
+ * - mode: insensitive で大文字小文字・全角半角を吸収
+ */
+function buildSearchWhere(query: string): Prisma.QuestionWhereInput {
+  const tokenGroups = expandSearchTerms(query);
+  if (tokenGroups.length === 0) return {};
+
+  return {
+    AND: tokenGroups.map((terms) => ({
+      OR: terms.flatMap((term) => [
+        { title:    { contains: term, mode: "insensitive" as const } },
+        { content:  { contains: term, mode: "insensitive" as const } },
+        { category: { contains: term, mode: "insensitive" as const } },
+      ]),
+    })),
+  };
+}
 
 function buildOrderBy(sort: SortKey, order: OrderDir): Prisma.QuestionOrderByWithRelationInput[] {
   if (sort === "answers") {
@@ -54,14 +76,7 @@ export default async function HomePage({
   const where: Prisma.QuestionWhereInput = {
     status: "approved",
     ...(category ? { category } : {}),
-    ...(searchQuery
-      ? {
-          OR: [
-            { title:   { contains: searchQuery } },
-            { content: { contains: searchQuery } },
-          ],
-        }
-      : {}),
+    ...(searchQuery ? buildSearchWhere(searchQuery) : {}),
   };
 
   // ── ページネーション付き質問取得 + 総件数 + AIナビゲーター用全件 ──

@@ -7,6 +7,7 @@ import TextThumbnail from "./components/TextThumbnail";
 import ThumbnailImage from "./components/ThumbnailImage";
 import { LEVEL_LABELS, LEVEL_STYLES, DEFAULT_LEVEL_STYLE } from "@/lib/levelConfig";
 import { isManagedThumbnail, getAutoThumbnail } from "@/lib/thumbnails";
+import { SYNONYM_GROUPS } from "@/lib/searchUtils";
 
 type Question = {
   id: number;
@@ -21,27 +22,7 @@ type Question = {
 
 type Props = { questions: Question[] };
 
-// ── 類義語グループ ────────────────────────────────────────────────────
-// いずれかの語がキーワードにマッチしたとき、グループ全体で質問を検索する
-const SYNONYM_GROUPS: string[][] = [
-  // 高音域
-  [
-    "高音", "高音域", "高い音", "上の音",
-    "ハイトーン", "ハイノート", "ハイC", "ハイBb", "ハイB", "ハイF",
-    "ダブルハイ", "フラジオ", "ハイ",
-  ],
-  // 低音域
-  [
-    "低音", "低音域", "低い音", "下の音",
-    "ローノート", "ロートーン", "ペダル", "ペダルトーン",
-    "ロー",
-  ],
-];
-
-/**
- * AIが抽出したキーワードを類義語グループで展開する。
- * 例: ["ハイトーン"] → ["ハイトーン","高音","高音域","ハイC","フラジオ",...]
- */
+/** AIが抽出したキーワードを類義語グループで展開する */
 function expandWithSynonyms(keywords: string[]): string[] {
   const expanded = new Set(keywords);
   for (const kw of keywords) {
