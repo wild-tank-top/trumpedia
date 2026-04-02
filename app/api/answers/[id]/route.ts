@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -26,6 +27,9 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   }
 
   await prisma.answer.delete({ where: { id: Number(id) } });
+
+  // ダッシュボードのAIクローン進捗を即時反映させる
+  revalidatePath("/dashboard");
 
   return NextResponse.json({ ok: true });
 }
