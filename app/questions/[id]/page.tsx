@@ -16,6 +16,7 @@ import { LEVEL_LABELS, LEVEL_STYLES, DEFAULT_LEVEL_STYLE } from "@/lib/levelConf
 import TextThumbnail from "@/app/components/TextThumbnail";
 import ThumbnailImage from "@/app/components/ThumbnailImage";
 import { isManagedThumbnail, getAutoThumbnail } from "@/lib/thumbnails";
+import { getRelatedQuestions } from "@/lib/relatedQuestions";
 
 type AnswerWithMeta = Answer & {
   user: { name: string | null; id: string; image: string | null };
@@ -127,6 +128,22 @@ export default async function QuestionDetailPage({
   if (question.status !== "approved" && session?.user.role !== "admin" && !isOwner) {
     notFound();
   }
+
+  // 関連質問の取得・スコアリング
+  const relatedCandidates = await prisma.question.findMany({
+    where: { status: "approved", id: { not: question.id } },
+    select: {
+      id: true, title: true, content: true,
+      category: true, level: true, views: true, thumbnail: true,
+      _count: { select: { answers: true } },
+    },
+  }).catch(() => []);
+
+  const relatedQuestions = getRelatedQuestions(
+    { id: question.id, title: question.title, content: question.content, category: question.category, level: question.level },
+    relatedCandidates,
+    4
+  );
 
   return (
     <div>
@@ -315,6 +332,48 @@ export default async function QuestionDetailPage({
             session={session}
             existingAnswer={myExistingAnswer}
           />
+        </div>
+      )}
+
+      {/* 関連質問 */}
+      {relatedQuestions.length > 0 && (
+        <div className="mt-10 pt-8 border-t border-gray-200">
+          <h2 className="text-base font-bold text-gray-800 mb-4">関連する質問</h2>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {relatedQuestions.map((q) => {
+              const s = LEVEL_STYLES[q.level] ?? DEFAULT_LEVEL_STYLE;
+              const src = isManagedThumbnail(q.thumbnail)
+                ? q.thumbnail!
+                : getAutoThumbnail(q.id);
+              return (
+                <Link
+                  key={q.id}
+                  href={`/questions/${q.id}`}
+                  className={`flex gap-3 bg-white rounded-xl border ${s.cardBorder} p-3 hover:shadow-md transition-all group`}
+                >
+                  {/* サムネイル */}
+                  <div className="w-24 shrink-0 rounded-lg overflow-hidden aspect-video self-start">
+                    <ThumbnailImage src={src} title={q.title} />
+                  </div>
+                  {/* テキスト */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap gap-1 mb-1">
+                      <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">
+                        {q.category}
+                      </span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${s.badge}`}>
+                        {LEVEL_LABELS[q.level] ?? q.level}
+                      </span>
+                    </div>
+                    <p className="text-sm font-semibold text-gray-800 leading-snug line-clamp-2 group-hover:text-teal-700 transition-colors">
+                      {q.title}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">回答 {q._count.answers}件</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
