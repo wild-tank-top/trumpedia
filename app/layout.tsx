@@ -81,6 +81,14 @@ export default async function RootLayout({
 
   const unreadCount = notifications.length;
 
+  // 管理者向け: 最終承認待ちの Fellows 候補数
+  const adminPendingCount =
+    session?.user.role === "admin"
+      ? await prisma.fellowApplication
+          .count({ where: { status: "referrer_approved" } })
+          .catch(() => 0)
+      : 0;
+
   return (
     <html lang="ja" className={notoSansJP.variable}>
       <body className="bg-gray-50 text-gray-800 min-h-screen">
@@ -100,6 +108,23 @@ export default async function RootLayout({
             <HeaderNav session={session} unreadCount={unreadCount} />
           </div>
         </header>
+
+        {/* 管理者バナー：最終承認待ち Fellows 候補がいる場合 */}
+        {adminPendingCount > 0 && (
+          <div className="bg-blue-600 text-white text-sm px-4 py-2.5 flex items-center justify-center gap-3">
+            <span>
+              Fellows 最終承認待ちが
+              <span className="font-bold mx-1">{adminPendingCount}件</span>
+              あります
+            </span>
+            <Link
+              href="/admin"
+              className="underline underline-offset-2 font-medium hover:text-blue-100 transition-colors shrink-0"
+            >
+              管理画面を開く →
+            </Link>
+          </div>
+        )}
 
         {/* 通知バナー：全ページ共通、ヘッダー直下 */}
         <NotificationBanner notifications={notifications} />

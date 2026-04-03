@@ -319,8 +319,8 @@ export default async function QuestionDetailPage({
         </div>
       )}
 
-      {/* 回答フォーム: ログイン時のみ表示（未ログインにはログイン促進UIを出さない） */}
-      {session && (
+      {/* 回答フォーム: Fellow/Admin のみ表示 */}
+      {session && isFellow && (
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <h3 className="text-base font-bold text-gray-800 mb-4">
             {myExistingAnswer ? "回答を編集する" : "回答を投稿する"}
