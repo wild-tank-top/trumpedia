@@ -4,33 +4,35 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [loading, setLoading]       = useState(false);
+  const [error, setError]           = useState("");
+  const [showInvite, setShowInvite] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    const form = e.currentTarget;
-    const name = (form.elements.namedItem("name") as HTMLInputElement).value;
-    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
-    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+    const form       = e.currentTarget;
+    const name       = (form.elements.namedItem("name")       as HTMLInputElement).value;
+    const email      = (form.elements.namedItem("email")      as HTMLInputElement).value;
+    const password   = (form.elements.namedItem("password")   as HTMLInputElement).value;
+    const inviteCode = (form.elements.namedItem("inviteCode") as HTMLInputElement)?.value?.trim();
 
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, inviteCode: inviteCode || undefined }),
       });
 
       if (res.ok) {
-        // 登録後に自動ログイン → トップへ遷移（loading は true のまま維持）
         await signIn("credentials", { email, password, redirect: false });
-        router.push("/");
+        router.push("/dashboard");
         router.refresh();
       } else {
         const json = await res.json().catch(() => ({}));
@@ -86,6 +88,31 @@ export default function RegisterPage() {
           />
         </div>
 
+        {/* Fellows招待コード（任意・折りたたみ） */}
+        <div className="border border-gray-200 rounded-xl overflow-hidden">
+          <button type="button" onClick={() => setShowInvite((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
+          >
+            <span className="text-sm text-gray-600">
+              Fellows招待コードをお持ちの方
+              <span className="text-xs text-gray-400 ml-1">（任意）</span>
+            </span>
+            {showInvite ? <ChevronUp size={15} className="text-gray-400" /> : <ChevronDown size={15} className="text-gray-400" />}
+          </button>
+          {showInvite && (
+            <div className="px-4 py-3 border-t border-gray-100">
+              <input name="inviteCode" type="text" disabled={loading}
+                placeholder="例：TRP8K2XZ" maxLength={12}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-amber-400 disabled:opacity-50"
+                onChange={(e) => { e.target.value = e.target.value.toUpperCase(); }}
+              />
+              <p className="text-xs text-gray-400 mt-1.5">
+                招待コードは登録後でもダッシュボードから入力できます
+              </p>
+            </div>
+          )}
+        </div>
+
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 flex items-start gap-2">
             <svg className="w-4 h-4 text-red-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,7 +138,7 @@ export default function RegisterPage() {
       </form>
 
       <p className="text-xs text-gray-400 text-center mt-6">
-        登録後、管理者がfellowロールを付与するまでは回答できません。
+        ゲストとして登録後、Fellows招待コードで参加申請できます。
       </p>
     </div>
   );

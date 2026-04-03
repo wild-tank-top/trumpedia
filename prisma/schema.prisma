@@ -19,13 +19,17 @@ model User {
   role          String    @default("guest") // guest / fellow / admin
   createdAt     DateTime  @default(now())
 
-  accounts      Account[]
-  sessions      Session[]
-  answers       Answer[]
-  profile       Profile?
-  questions     Question[]
-  likes         Like[]
-  notifications Notification[]
+  accounts           Account[]
+  sessions           Session[]
+  answers            Answer[]
+  profile            Profile?
+  questions          Question[]
+  likes              Like[]
+  notifications      Notification[]
+  issuedInviteCodes  InviteCode[]        @relation("IssuedInviteCodes")
+  usedInviteCode     InviteCode?         @relation("UsedInviteCode")
+  fellowApplication  FellowApplication?  @relation("FellowApplications")
+  fellowReferrals    FellowApplication[] @relation("FellowReferrals")
 }
 
 model Account {
@@ -150,4 +154,34 @@ model Notification {
   question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
   @@unique([userId, questionId, type])
+}
+
+// ── Fellowsネットワーク ─────────────────────────────
+
+model InviteCode {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  issuerId  String
+  issuer    User      @relation("IssuedInviteCodes", fields: [issuerId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  usedById  String?   @unique
+  usedBy    User?     @relation("UsedInviteCode", fields: [usedById], references: [id], onDelete: SetNull)
+  application FellowApplication?
+  createdAt DateTime  @default(now())
+}
+
+model FellowApplication {
+  id           String    @id @default(cuid())
+  applicantId  String    @unique
+  applicant    User      @relation("FellowApplications", fields: [applicantId], references: [id], onDelete: Cascade)
+  referrerId   String
+  referrer     User      @relation("FellowReferrals", fields: [referrerId], references: [id])
+  inviteCodeId String    @unique
+  inviteCode   InviteCode @relation(fields: [inviteCodeId], references: [id])
+  status       String    @default("pending")
+  // pending → referrer_approved → admin_completed
+  referrerNote String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }
