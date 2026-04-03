@@ -25,6 +25,9 @@ const siteUrl =
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  verification: {
+    google: "pjKOY2v7UC2VTAeCzBod0Lk2p9rDUAHMgsjalQoGszM",
+  },
   title: {
     default: "Trumpedia",
     template: "%s | Trumpedia",
