@@ -30,6 +30,33 @@ export async function PATCH(
     );
   }
 
+  // guest に戻す場合: FellowApplication を削除し再申請できるようにする
+  if (role === "guest") {
+    await prisma.$transaction(async (tx) => {
+      const app = await tx.fellowApplication.findUnique({
+        where: { applicantId: id },
+        select: { inviteCodeId: true },
+      });
+      if (app) {
+        // 使用済みの招待コードもリセット（再利用可能にする）
+        if (app.inviteCodeId) {
+          await tx.inviteCode.update({
+            where: { id: app.inviteCodeId },
+            data: { usedAt: null, usedById: null },
+          });
+        }
+        await tx.fellowApplication.delete({ where: { applicantId: id } });
+      }
+      await tx.user.update({ where: { id }, data: { role } });
+    });
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { id: true, name: true, email: true, role: true },
+    });
+    return NextResponse.json(user);
+  }
+
   const user = await prisma.user.update({
     where: { id },
     data: { role },
