@@ -20,14 +20,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const questions = await prisma.question
     .findMany({
       where: { status: "approved" },
-      select: { id: true, updatedAt: true },
-      orderBy: { updatedAt: "desc" },
+      select: { id: true, lastAnsweredAt: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
     })
     .catch(() => []);
 
   const questionPages: MetadataRoute.Sitemap = questions.map((q) => ({
     url:             `${siteUrl}/questions/${q.id}`,
-    lastModified:    q.updatedAt,
+    lastModified:    q.lastAnsweredAt ?? q.createdAt,
     priority:        0.7,
     changeFrequency: "weekly",
   }));
