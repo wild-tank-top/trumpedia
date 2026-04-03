@@ -109,6 +109,11 @@ export default function HeaderNav({
                     <DropdownLink href="/my-questions" icon={<ListOrdered size={14} />}>
                       自分の質問
                     </DropdownLink>
+                    {role === "guest" && (
+                      <DropdownLink href="/dashboard" icon={<LayoutDashboard size={14} />}>
+                        マイページ
+                      </DropdownLink>
+                    )}
                     {(role === "fellow" || role === "admin") && (
                       <DropdownLink href="/dashboard" icon={<LayoutDashboard size={14} />}>
                         Dashboard
@@ -198,6 +203,12 @@ export default function HeaderNav({
               <MobileLink href="/my-questions" icon={<ListOrdered size={18} />} onClick={close}>
                 自分の質問
               </MobileLink>
+
+              {role === "guest" && (
+                <MobileLink href="/dashboard" icon={<LayoutDashboard size={18} />} onClick={close}>
+                  マイページ
+                </MobileLink>
+              )}
 
               {(role === "fellow" || role === "admin") && (
                 <MobileLink href="/dashboard" icon={<LayoutDashboard size={18} />} onClick={close}>
