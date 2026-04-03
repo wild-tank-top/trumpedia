@@ -28,9 +28,11 @@ export default async function DashboardPage() {
       })
       .catch(() => null);
 
-    const serialized = application
-      ? { ...application, createdAt: application.createdAt.toISOString() }
-      : null;
+    // admin_completed のまま guest に戻されたユーザーは再申請できるよう null 扱い
+    const serialized =
+      application && application.status !== "admin_completed"
+        ? { ...application, createdAt: application.createdAt.toISOString() }
+        : null;
 
     return (
       <div className="space-y-6 max-w-xl mx-auto">
