@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import InviteCodeManager from "./InviteCodeManager";
+import MissionMessage from "./MissionMessage";
 import PendingReferrals from "./PendingReferrals";
 import GuestDashboard from "./GuestDashboard";
 
@@ -199,6 +200,9 @@ export default async function DashboardPage() {
 
       {/* 招待コード管理 */}
       <InviteCodeManager initialCodes={serializedCodes} />
+
+      {/* ミッション＆ベネフィット */}
+      <MissionMessage />
     </div>
   );
 }
