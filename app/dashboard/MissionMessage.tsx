@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { Gift, Cpu, UserCheck, Copy, Check, Quote } from "lucide-react";
 
-const COPY_TEXT = `【Trumpediaへのご招待】
+const COPY_TEXT = `【Trumpedia開発者からのご招待】
 
-『Trumpedia』は、トランペット奏者の知見・思考・哲学を次世代へ繋ぐQ&Aプラットフォームです。
+『Trumpedia』は、トランペット奏者の知見・思考・哲学を時間・場所の制約を超えて繋ぐQ&Aプラットフォームです。
 
 日本中にいるトランペット吹きの中で、実際にあなたに会える人は少なく、あなたの優れた知見が一時の会話で消えていってしまうことが本当に惜しい。だからこのサイトを作りました。
 
@@ -17,7 +17,7 @@ Fellowとして参加することで——
 
 招待コードをお送りします。ぜひ一緒に、日本のトランペット界をより自由でクリエイティブなステージへ。
 
-https://trumpedia.jp`;
+https://trumpedia.vercel.app/`;
 
 const BENEFITS = [
   {
