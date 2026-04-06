@@ -43,7 +43,6 @@ export default async function DashboardPage() {
             {session.user.name ?? "ゲスト"} さん
           </p>
         </div>
-        <GuestDashboard application={serialized} />
         <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 text-sm text-gray-500 space-y-1">
           <p className="font-medium text-gray-700">ゲストでできること</p>
           <ul className="list-disc list-inside space-y-0.5 text-xs">
@@ -56,6 +55,9 @@ export default async function DashboardPage() {
             <li>AIクローン進捗の追跡</li>
             <li>他のユーザーへの招待コードの発行</li>
           </ul>
+        </div>
+        <div className="border-t border-gray-100 pt-4">
+          <GuestDashboard application={serialized} />
         </div>
       </div>
     );
