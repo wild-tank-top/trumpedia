@@ -53,13 +53,27 @@ export default function MissionMessage() {
     <div className="rounded-2xl overflow-hidden border border-gray-800 bg-gray-950 text-gray-100 shadow-lg">
 
       {/* ── ヘッダー ────────────────────────────────── */}
-      <div className="px-6 pt-7 pb-5 border-b border-gray-800">
-        <p className="text-xs font-semibold tracking-widest text-amber-400/80 uppercase mb-2">
-          Developer's Message
-        </p>
-        <h2 className="text-lg font-bold text-white leading-snug">
-          Trumpedia 開発者からのメッセージ
-        </h2>
+      <div className="px-6 pt-7 pb-5 border-b border-gray-800 flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold tracking-widest text-amber-400/80 uppercase mb-2">
+            Developer's Message
+          </p>
+          <h2 className="text-lg font-bold text-white leading-snug">
+            Trumpedia 開発者からのメッセージ
+          </h2>
+        </div>
+        <button
+          onClick={handleCopy}
+          className={[
+            "shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all mt-1",
+            copied
+              ? "bg-teal-500/20 text-teal-300 border border-teal-500/30"
+              : "bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30",
+          ].join(" ")}
+        >
+          {copied ? <Check size={14} /> : <Copy size={14} />}
+          {copied ? "コピーしました！" : "招待文をコピー"}
+        </button>
       </div>
 
       {/* ── メッセージ本文 ──────────────────────────── */}
@@ -97,23 +111,11 @@ export default function MissionMessage() {
         ))}
       </div>
 
-      {/* ── フッター + コピーボタン ─────────────────── */}
-      <div className="px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <p className="text-xs text-gray-500 leading-relaxed max-w-sm">
+      {/* ── フッター ────────────────────────────────── */}
+      <div className="px-6 py-5">
+        <p className="text-xs text-gray-500 leading-relaxed">
           あなたの一言が、どこかの誰かを救い、喜びやひらめきを与えることを、私たちは心から信じています。
         </p>
-        <button
-          onClick={handleCopy}
-          className={[
-            "shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all",
-            copied
-              ? "bg-teal-500/20 text-teal-300 border border-teal-500/30"
-              : "bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30",
-          ].join(" ")}
-        >
-          {copied ? <Check size={14} /> : <Copy size={14} />}
-          {copied ? "コピーしました！" : "招待文をコピー"}
-        </button>
       </div>
     </div>
   );
