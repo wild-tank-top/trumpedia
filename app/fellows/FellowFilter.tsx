@@ -11,6 +11,7 @@ import {
   type GojuonRowKey,
 } from "@/lib/kana";
 import { getTier } from "@/lib/answerTier";
+import TierCornerOrnament from "@/app/components/TierCornerOrnament";
 
 type Fellow = {
   id: string;
@@ -117,6 +118,7 @@ export default function FellowFilter({
                 href={`/contributors/${fellow.id}`}
                 className={`p-4 transition-all flex items-center gap-3 ${t.shape} ${t.bg} ${t.border} ${t.glow} hover:opacity-80`}
               >
+                <TierCornerOrnament level={t.ornamentLevel} colorClass={t.ornamentColor} size={26} />
                 <Avatar src={fellow.image} name={fellow.name} size="md" />
 
                 <div className="flex-1 min-w-0">

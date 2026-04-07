@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { cookies } from "next/headers";
 import Avatar from "@/app/components/Avatar";
 import { getTier } from "@/lib/answerTier";
+import TierCornerOrnament from "@/app/components/TierCornerOrnament";
 
 const ROLE_LABELS: Record<string, { label: string; color: string }> = {
   admin: { label: "管理者", color: "bg-red-100 text-red-700" },
@@ -67,6 +68,7 @@ export default async function ContributorPage({
     <div>
       {/* プロフィールヘッダー */}
       <div className={`p-6 mb-6 transition-all ${tier.shape} ${tier.bg} ${tier.border} ${tier.glow}`}>
+        <TierCornerOrnament level={tier.ornamentLevel} colorClass={tier.ornamentColor} size={42} />
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
             <Avatar src={user.image} name={user.name} size="lg" />

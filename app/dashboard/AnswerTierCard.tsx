@@ -1,5 +1,6 @@
 import { Trophy } from "lucide-react";
 import { TIERS, getTier } from "@/lib/answerTier";
+import TierCornerOrnament from "@/app/components/TierCornerOrnament";
 
 export default function AnswerTierCard({ totalAnswers }: { totalAnswers: number }) {
   const tier = getTier(totalAnswers);
@@ -11,6 +12,7 @@ export default function AnswerTierCard({ totalAnswers }: { totalAnswers: number 
 
   return (
     <div className={`p-5 transition-all ${tier.shape} ${tier.bg} ${tier.border} ${tier.glow}`}>
+      <TierCornerOrnament level={tier.ornamentLevel} colorClass={tier.ornamentColor} size={38} />
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
