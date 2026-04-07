@@ -12,9 +12,10 @@ import {
 } from "lucide-react";
 
 const ROLE_LABELS = {
-  admin: { label: "管理者", color: "bg-red-100 text-red-700" },
-  fellow: { label: "Fellow", color: "bg-amber-100 text-amber-700" },
-  guest: { label: "ゲスト", color: "bg-gray-100 text-gray-500" },
+  master_admin: { label: "マスター管理者", color: "bg-red-200 text-red-800" },
+  admin:        { label: "管理者",         color: "bg-red-100 text-red-700" },
+  fellow:       { label: "Fellow",         color: "bg-amber-100 text-amber-700" },
+  guest:        { label: "ゲスト",         color: "bg-gray-100 text-gray-500" },
 } as const;
 
 type Role = keyof typeof ROLE_LABELS;
@@ -22,9 +23,11 @@ type Role = keyof typeof ROLE_LABELS;
 export default function HeaderNav({
   session,
   unreadCount = 0,
+  tierRingClass = "",
 }: {
   session: Session | null;
   unreadCount?: number;
+  tierRingClass?: string;
 }) {
   const [open, setOpen] = useState(false);           // モバイルメニュー
   const [dropOpen, setDropOpen] = useState(false);   // PCアバタードロップダウン
@@ -82,7 +85,9 @@ export default function HeaderNav({
                 aria-haspopup="true"
                 aria-expanded={dropOpen}
               >
-                <Avatar src={session.user.image} name={session.user.name} size="sm" />
+                <div className={`rounded-full${tierRingClass ? ` ring-2 ring-offset-2 ring-offset-white ${tierRingClass}` : ""}`}>
+                  <Avatar src={session.user.image} name={session.user.name} size="sm" />
+                </div>
                 {unreadCount > 0 && (
                   <span className="absolute top-0 left-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
                 )}
@@ -114,12 +119,12 @@ export default function HeaderNav({
                         マイページ
                       </DropdownLink>
                     )}
-                    {(role === "fellow" || role === "admin") && (
+                    {(role === "fellow" || role === "admin" || role === "master_admin") && (
                       <DropdownLink href="/dashboard" icon={<LayoutDashboard size={14} />}>
                         Dashboard
                       </DropdownLink>
                     )}
-                    {role === "admin" && (
+                    {(role === "admin" || role === "master_admin") && (
                       <DropdownLink href="/admin" icon={<Settings size={14} />}>
                         管理画面
                       </DropdownLink>
@@ -210,13 +215,13 @@ export default function HeaderNav({
                 </MobileLink>
               )}
 
-              {(role === "fellow" || role === "admin") && (
+              {(role === "fellow" || role === "admin" || role === "master_admin") && (
                 <MobileLink href="/dashboard" icon={<LayoutDashboard size={18} />} onClick={close}>
                   Dashboard
                 </MobileLink>
               )}
 
-              {role === "admin" && (
+              {(role === "admin" || role === "master_admin") && (
                 <MobileLink href="/admin" icon={<Settings size={18} />} onClick={close}>
                   管理画面
                 </MobileLink>
@@ -225,7 +230,11 @@ export default function HeaderNav({
               {/* プロフィール */}
               <MobileLink
                 href={`/contributors/${session.user.id}`}
-                icon={<Avatar src={session.user.image} name={session.user.name} size="sm" />}
+                icon={
+                  <div className={`rounded-full${tierRingClass ? ` ring-2 ring-offset-2 ring-offset-white ${tierRingClass}` : ""}`}>
+                    <Avatar src={session.user.image} name={session.user.name} size="sm" />
+                  </div>
+                }
                 onClick={close}
               >
                 {session.user.name ?? "プロフィール"}

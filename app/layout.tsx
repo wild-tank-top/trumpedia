@@ -9,6 +9,7 @@ import Providers from "./providers";
 import Link from "next/link";
 import Image from "next/image";
 import { isAdmin } from "@/lib/roles";
+import { getTier } from "@/lib/answerTier";
 
 const notoSansJP = Noto_Sans_JP({
   weight: ["400", "500", "700", "900"],
@@ -85,6 +86,13 @@ export default async function RootLayout({
 
   const unreadCount = notifications.length;
 
+  // アバターのティアリング
+  const answerCount = session?.user.id
+    ? await prisma.answer.count({ where: { userId: session.user.id } }).catch(() => 0)
+    : 0;
+  const tier = getTier(answerCount);
+  const tierRingClass = tier.index > 0 ? tier.border.replace("border-", "ring-") : "";
+
   // 管理者向け: 最終承認待ちの Fellows 候補数
   const adminPendingCount =
     isAdmin(session?.user.role)
@@ -109,7 +117,7 @@ export default async function RootLayout({
                 priority
               />
             </Link>
-            <HeaderNav session={session} unreadCount={unreadCount} />
+            <HeaderNav session={session} unreadCount={unreadCount} tierRingClass={tierRingClass} />
           </div>
         </header>
 
