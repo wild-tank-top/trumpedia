@@ -112,7 +112,7 @@ export default function FellowFilter({
                   ? adminPreviewCount
                   : fellow._count.answers;
               const t = getTier(answerCount);
-              const ringClass = t.border.replace("border-", "ring-");
+              const ringClass = t.ring;
               return (
               <Link
                 key={fellow.id}

@@ -91,7 +91,7 @@ export default async function RootLayout({
     ? await prisma.answer.count({ where: { userId: session.user.id } }).catch(() => 0)
     : 0;
   const tier = getTier(answerCount);
-  const tierRingClass = tier.border.replace("border-", "ring-");
+  const tierRingClass = tier.ring;
 
   // 管理者向け: 最終承認待ちの Fellows 候補数
   const adminPendingCount =
