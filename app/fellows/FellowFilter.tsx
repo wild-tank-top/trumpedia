@@ -112,7 +112,7 @@ export default function FellowFilter({
                   ? adminPreviewCount
                   : fellow._count.answers;
               const t = getTier(answerCount);
-              const ringClass = t.index > 0 ? t.border.replace("border-", "ring-") : "";
+              const ringClass = t.border.replace("border-", "ring-");
               return (
               <Link
                 key={fellow.id}
@@ -120,7 +120,7 @@ export default function FellowFilter({
                 className={`p-4 transition-all flex items-center gap-3 ${t.shape} ${t.bg} ${t.border} ${t.glow} hover:opacity-80`}
               >
                 <TierCornerOrnament level={t.ornamentLevel} colorClass={t.ornamentColor} size={26} />
-                <div className={`rounded-full shrink-0${ringClass ? ` ring-2 ring-offset-2 ring-offset-transparent ${ringClass}` : ""}`}>
+                <div className={`rounded-full shrink-0 ring-2 ring-offset-2 ring-offset-transparent ${ringClass}`}>
                   <Avatar src={fellow.image} name={fellow.name} size="md" />
                 </div>
 

@@ -85,7 +85,7 @@ export default function HeaderNav({
                 aria-haspopup="true"
                 aria-expanded={dropOpen}
               >
-                <div className={`rounded-full${tierRingClass ? ` ring-2 ring-offset-2 ring-offset-white ${tierRingClass}` : ""}`}>
+                <div className={`rounded-full ring-2 ring-offset-2 ring-offset-white ${tierRingClass}`}>
                   <Avatar src={session.user.image} name={session.user.name} size="sm" />
                 </div>
                 {unreadCount > 0 && (
@@ -231,7 +231,7 @@ export default function HeaderNav({
               <MobileLink
                 href={`/contributors/${session.user.id}`}
                 icon={
-                  <div className={`rounded-full${tierRingClass ? ` ring-2 ring-offset-2 ring-offset-white ${tierRingClass}` : ""}`}>
+                  <div className={`rounded-full ring-2 ring-offset-2 ring-offset-white ${tierRingClass}`}>
                     <Avatar src={session.user.image} name={session.user.name} size="sm" />
                   </div>
                 }
