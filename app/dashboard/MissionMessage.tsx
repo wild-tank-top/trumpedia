@@ -13,9 +13,9 @@ const COPY_TEXT = `【Trumpedia開発者からのご招待】
 
 Fellowとして参加することで——
 
-🎁 現場で磨き上げた知恵を「消えない道標」として未来の奏者へ残せます。
-🤖 蓄積された思考をもとにした「AIクローン」プロジェクトへご招待予定です。
-📖 回答を重ねるだけで、あなたの音楽哲学が可視化されポートフォリオになります。
+🎁 現場で磨き上げた知恵を「消えない道標」として、全国の奏者へ届けられます。
+📖 回答を重ねるだけで、あなたの音楽哲学が可視化され、名刺代わりのポートフォリオになります。
+🤖 蓄積された思考をもとにした「AIクローン」プロジェクトも構想中です。
 
 招待コードをお送りします。
 ぜひ一緒に、日本のトランペット界をより自由でクリエイティブなステージへ。
@@ -25,18 +25,21 @@ https://trumpedia.vercel.app/`;
 const BENEFITS = [
   {
     icon: Gift,
-    title: "次世代への「無形の贈り物」を残す",
-    body: "現場で磨き上げた知恵を、一時の会話で終わらせない。あなたが楽器を置いた後も未来の奏者を助け続ける「消えない道標」になります。",
-  },
-  {
-    icon: Cpu,
-    title: "あなたの「分身（AI）」が24時間誰かを助ける",
-    body: "蓄積された思考を学習し、あなたに代わって悩みを受け止める「AIクローン」プロジェクトを構想中。あなたの魂が未来の音楽シーンを支え続けます。",
+    title: "全国の奏者へ「無形の贈り物」を届ける",
+    body: "現場で磨き上げた知恵を、一時の会話やレッスンで終わらせない。あなたの言葉は、場所を問わず日本中の奏者を導き、あなたが楽器を置いた後も「消えない道標」として残り続けます。",
+    badge: null,
   },
   {
     icon: UserCheck,
     title: "自分を表現する「新しいポートフォリオ」に",
-    body: "回答を重ねるだけで、演奏だけでは伝えきれない「あなたの音楽哲学」が可視化され、信頼の証となります。",
+    body: "回答を重ねるだけで、演奏だけでは伝えきれない「あなたの音楽哲学」が可視化されます。デジタル上の「信頼の証」として、全国へ自分を届ける名刺代わりに活用してください。",
+    badge: null,
+  },
+  {
+    icon: Cpu,
+    title: "あなたの「分身（AI）」が24時間誰かを助ける",
+    body: "蓄積された思考を学習し、あなたに代わって悩みを受け止める「AIクローン」プロジェクトを構想中。あなたの魂を宿した存在が、24時間365日、未来の音楽シーンを支え続けます。",
+    badge: "構想中",
   },
 ] as const;
 
@@ -98,14 +101,25 @@ export default function MissionMessage() {
         <h3 className="text-xs font-semibold tracking-widest text-amber-400/80 uppercase">
           Fellowとして、知恵を未来へ繋ぐ
         </h3>
-        {BENEFITS.map(({ icon: Icon, title, body }) => (
+        {BENEFITS.map(({ icon: Icon, title, body, badge }) => (
           <div key={title} className="flex gap-4">
-            <div className="shrink-0 w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-              <Icon size={16} className="text-amber-400" />
+            <div className={`shrink-0 w-9 h-9 rounded-xl border flex items-center justify-center ${badge ? "bg-gray-700/50 border-gray-600" : "bg-amber-500/10 border-amber-500/20"}`}>
+              <Icon size={16} className={badge ? "text-gray-400" : "text-amber-400"} />
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-white leading-snug">{title}</p>
-              <p className="text-xs text-gray-400 mt-1 leading-relaxed">{body}</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className={`text-sm font-semibold leading-snug ${badge ? "text-gray-400" : "text-white"}`}>
+                  {title}
+                </p>
+                {badge && (
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-700 text-gray-400 border border-gray-600 tracking-wide">
+                    {badge}
+                  </span>
+                )}
+              </div>
+              <p className={`text-xs mt-1 leading-relaxed ${badge ? "text-gray-500" : "text-gray-400"}`}>
+                {body}
+              </p>
             </div>
           </div>
         ))}
