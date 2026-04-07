@@ -68,6 +68,11 @@ export default async function DashboardPage() {
   }
 
   // ── Fellow / Admin: フルダッシュボード ──────────────────────────
+  // 7日前の00:00
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+  sevenDaysAgo.setHours(0, 0, 0, 0);
+
   const [
     totalAnswers,
     answeredQuestions,
@@ -75,6 +80,7 @@ export default async function DashboardPage() {
     inviteCodes,
     pendingReferrals,
     categoryQuestions,
+    rawPageViews,
   ] = await Promise.all([
     prisma.answer.count({ where: { userId } }),
     prisma.question.findMany({
@@ -105,25 +111,24 @@ export default async function DashboardPage() {
       where: { status: "approved" },
       select: { category: true, _count: { select: { answers: true } } },
     }).catch(() => []),
+    // Resonance Graph: 直近7日のPV（テーブル未作成時は空配列で続行）
+    (prisma.pageView as typeof prisma.pageView | undefined)
+      ?.findMany({ where: { createdAt: { gte: sevenDaysAgo } }, select: { createdAt: true } })
+      .catch(() => []) ?? Promise.resolve([]),
   ]);
 
-  // ── 7日間のサイト活動（Resonance Graph用） ─────────────────────
-  const sevenDayStats = await Promise.all(
-    Array.from({ length: 7 }, async (_, i) => {
-      const start = new Date();
-      start.setDate(start.getDate() - (6 - i));
-      start.setHours(0, 0, 0, 0);
-      const end = new Date(start);
-      end.setHours(23, 59, 59, 999);
-      const count = await prisma.pageView
-        .count({ where: { createdAt: { gte: start, lte: end } } })
-        .catch(() => 0);
-      return {
-        date: start.toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" }),
-        count,
-      };
-    })
-  );
+  // ── Resonance Graph: 日別集計（1クエリから計算） ────────────────
+  const dayCountMap = new Map<string, number>();
+  for (const pv of rawPageViews) {
+    const key = pv.createdAt.toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" });
+    dayCountMap.set(key, (dayCountMap.get(key) ?? 0) + 1);
+  }
+  const sevenDayStats = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    const key = d.toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" });
+    return { date: key, count: dayCountMap.get(key) ?? 0 };
+  });
 
   // ── Weekly Focus: 最も未回答率が高いカテゴリを抽出 ─────────────
   type CatStat = { total: number; unanswered: number; totalAnswers: number };
