@@ -115,7 +115,7 @@ export default function FellowFilter({
               <Link
                 key={fellow.id}
                 href={`/contributors/${fellow.id}`}
-                className={`rounded-xl border-2 p-4 transition-all flex items-center gap-3 ${t.bg} ${t.border} ${t.glow} hover:opacity-80`}
+                className={`p-4 transition-all flex items-center gap-3 ${t.shape} ${t.bg} ${t.border} ${t.glow} hover:opacity-80`}
               >
                 <Avatar src={fellow.image} name={fellow.name} size="md" />
 
