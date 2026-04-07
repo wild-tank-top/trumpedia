@@ -1,14 +1,22 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
+import { cookies } from "next/headers";
 import FellowFilter from "./FellowFilter";
 
 export const metadata: Metadata = {
   title: "Fellows | Trumpedia",
 };
 
-export const revalidate = 1800; // 30分キャッシュ
+export const dynamic = "force-dynamic"; // Tier preview requires per-request cookie
 
 export default async function FellowsPage() {
+  const [session, cookieStore] = await Promise.all([auth(), cookies()]);
+  const isAdmin = session?.user.role === "admin";
+  const tierPreviewRaw = cookieStore.get("tier_preview")?.value;
+  const adminPreviewCount =
+    isAdmin && tierPreviewRaw !== undefined ? parseInt(tierPreviewRaw, 10) : null;
+
   const fellows = await prisma.user.findMany({
     where: { role: "fellow" },
     select: {
@@ -42,7 +50,11 @@ export default async function FellowsPage() {
           <p className="text-sm mt-1">管理者がFellowロールを付与すると表示されます</p>
         </div>
       ) : (
-        <FellowFilter fellows={fellowsWithYomi} />
+        <FellowFilter
+        fellows={fellowsWithYomi}
+        adminId={isAdmin ? session?.user.id : undefined}
+        adminPreviewCount={adminPreviewCount}
+      />
       )}
     </div>
   );

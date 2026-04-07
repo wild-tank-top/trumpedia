@@ -21,7 +21,15 @@ type Fellow = {
   _count: { answers: number };
 };
 
-export default function FellowFilter({ fellows }: { fellows: Fellow[] }) {
+export default function FellowFilter({
+  fellows,
+  adminId,
+  adminPreviewCount,
+}: {
+  fellows: Fellow[];
+  adminId?: string;
+  adminPreviewCount?: number | null;
+}) {
   const [activeRow, setActiveRow] = useState<GojuonRowKey | typeof ALL_ROW_KEY>(ALL_ROW_KEY);
 
   // 50音順にソート済みのリスト（一度だけ計算）
@@ -98,7 +106,11 @@ export default function FellowFilter({ fellows }: { fellows: Fellow[] }) {
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             {filtered.map((fellow) => {
-              const t = getTier(fellow._count.answers);
+              const answerCount =
+                adminId && fellow.id === adminId && adminPreviewCount !== null && adminPreviewCount !== undefined
+                  ? adminPreviewCount
+                  : fellow._count.answers;
+              const t = getTier(answerCount);
               return (
               <Link
                 key={fellow.id}

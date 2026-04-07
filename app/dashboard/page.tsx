@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import type { Metadata } from "next";
 import Link from "next/link";
 import InviteCodeManager from "./InviteCodeManager";
@@ -11,6 +12,7 @@ import ResonanceGraph from "./ResonanceGraph";
 import WeeklyFocusTag from "./WeeklyFocusTag";
 import AnswerTierCard from "./AnswerTierCard";
 import NotificationToast from "./NotificationToast";
+import TierPreviewSelector from "./TierPreviewSelector";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
@@ -20,6 +22,14 @@ export default async function DashboardPage() {
 
   const role   = session.user.role;
   const userId = session.user.id;
+  const isAdmin = role === "admin";
+
+  // 管理者向けTierプレビュー（Cookie）
+  const cookieStore = await cookies();
+  const tierPreviewRaw = cookieStore.get("tier_preview")?.value;
+  const tierPreviewCount = isAdmin && tierPreviewRaw !== undefined
+    ? parseInt(tierPreviewRaw, 10)
+    : null;
 
   // ── ゲスト: 申請状況のみ表示 ──────────────────────────────────
   if (role === "guest") {
@@ -187,7 +197,10 @@ export default async function DashboardPage() {
       <ResonanceGraph stats={sevenDayStats} />
 
       {/* Answer Tier + 統計ウィジェット */}
-      <AnswerTierCard totalAnswers={totalAnswers} />
+      <AnswerTierCard totalAnswers={tierPreviewCount ?? totalAnswers} />
+      {isAdmin && (
+        <TierPreviewSelector current={tierPreviewCount ?? totalAnswers} />
+      )}
 
       {/* 統計ウィジェット */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
