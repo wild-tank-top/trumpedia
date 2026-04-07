@@ -10,6 +10,7 @@ import {
   sortByYomi,
   type GojuonRowKey,
 } from "@/lib/kana";
+import { getTier } from "@/lib/answerTier";
 
 type Fellow = {
   id: string;
@@ -96,11 +97,13 @@ export default function FellowFilter({ fellows }: { fellows: Fellow[] }) {
           </p>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
-            {filtered.map((fellow) => (
+            {filtered.map((fellow) => {
+              const t = getTier(fellow._count.answers);
+              return (
               <Link
                 key={fellow.id}
                 href={`/contributors/${fellow.id}`}
-                className="bg-white rounded-xl border border-gray-200 p-4 hover:border-amber-300 hover:shadow-sm transition-all flex items-center gap-3"
+                className={`bg-white rounded-xl border-2 p-4 transition-all flex items-center gap-3 ${t.border} ${t.glow} hover:opacity-80`}
               >
                 <Avatar src={fellow.image} name={fellow.name} size="md" />
 
@@ -123,7 +126,8 @@ export default function FellowFilter({ fellows }: { fellows: Fellow[] }) {
 
                 <span className="text-gray-300 shrink-0 text-lg">›</span>
               </Link>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

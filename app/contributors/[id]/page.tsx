@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import Avatar from "@/app/components/Avatar";
+import { getTier } from "@/lib/answerTier";
 
 const ROLE_LABELS: Record<string, { label: string; color: string }> = {
   admin: { label: "管理者", color: "bg-red-100 text-red-700" },
@@ -45,6 +46,7 @@ export default async function ContributorPage({
   const isOwnProfile = session?.user.id === id;
   const isAdmin = session?.user.role === "admin";
   const badge = ROLE_LABELS[user.role] ?? ROLE_LABELS.guest;
+  const tier = getTier(user.answers.length);
 
   // 公開されている回答のみ表示（自分 or admin は全件）
   const visibleAnswers =
@@ -55,7 +57,7 @@ export default async function ContributorPage({
   return (
     <div>
       {/* プロフィールヘッダー */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+      <div className={`bg-white rounded-xl border-2 p-6 mb-6 ${tier.border} ${tier.glow}`}>
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
             <Avatar src={user.image} name={user.name} size="lg" />
