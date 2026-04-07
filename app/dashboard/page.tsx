@@ -7,6 +7,10 @@ import InviteCodeManager from "./InviteCodeManager";
 import MissionMessage from "./MissionMessage";
 import PendingReferrals from "./PendingReferrals";
 import GuestDashboard from "./GuestDashboard";
+import ResonanceGraph from "./ResonanceGraph";
+import WeeklyFocusTag from "./WeeklyFocusTag";
+import AnswerTierCard from "./AnswerTierCard";
+import NotificationToast from "./NotificationToast";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
@@ -70,6 +74,7 @@ export default async function DashboardPage() {
     unansweredCount,
     inviteCodes,
     pendingReferrals,
+    categoryQuestions,
   ] = await Promise.all([
     prisma.answer.count({ where: { userId } }),
     prisma.question.findMany({
@@ -79,7 +84,6 @@ export default async function DashboardPage() {
     prisma.question.count({
       where: { status: "approved", answers: { none: {} } },
     }),
-    // 自分が発行したコード（直近20件）
     prisma.inviteCode.findMany({
       where: { issuerId: userId },
       orderBy: { createdAt: "desc" },
@@ -89,7 +93,6 @@ export default async function DashboardPage() {
         application: { select: { status: true } },
       },
     }).catch(() => []),
-    // 自分が紹介者で承認待ちの申請
     prisma.fellowApplication.findMany({
       where: { referrerId: userId, status: "pending" },
       include: {
@@ -97,7 +100,49 @@ export default async function DashboardPage() {
       },
       orderBy: { createdAt: "desc" },
     }).catch(() => []),
+    // Weekly Focus: カテゴリ別の回答状況
+    prisma.question.findMany({
+      where: { status: "approved" },
+      select: { category: true, _count: { select: { answers: true } } },
+    }).catch(() => []),
   ]);
+
+  // ── 7日間のサイト活動（Resonance Graph用） ─────────────────────
+  const sevenDayStats = await Promise.all(
+    Array.from({ length: 7 }, async (_, i) => {
+      const start = new Date();
+      start.setDate(start.getDate() - (6 - i));
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(start);
+      end.setHours(23, 59, 59, 999);
+      const count = await prisma.answer
+        .count({ where: { createdAt: { gte: start, lte: end } } })
+        .catch(() => 0);
+      return {
+        date: start.toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" }),
+        count,
+      };
+    })
+  );
+
+  // ── Weekly Focus: 最も未回答率が高いカテゴリを抽出 ─────────────
+  type CatStat = { total: number; unanswered: number; totalAnswers: number };
+  const catMap: Record<string, CatStat> = {};
+  for (const q of categoryQuestions) {
+    if (!catMap[q.category]) catMap[q.category] = { total: 0, unanswered: 0, totalAnswers: 0 };
+    catMap[q.category].total++;
+    catMap[q.category].totalAnswers += q._count.answers;
+    if (q._count.answers === 0) catMap[q.category].unanswered++;
+  }
+  const weeklyFocus = Object.entries(catMap)
+    .filter(([, s]) => s.total >= 2)
+    .map(([category, s]) => {
+      const unansweredRatio = s.unanswered / s.total;
+      const avgAnswers = s.totalAnswers / s.total;
+      const score = unansweredRatio * 0.65 + (1 / (avgAnswers + 1)) * 0.35;
+      return { category, score, unanswered: s.unanswered, total: s.total };
+    })
+    .sort((a, b) => b.score - a.score)[0] ?? null;
 
   const totalViews    = answeredQuestions.reduce((s, q) => s + q.views, 0);
   const cloneProgress = Math.min(totalAnswers, 100);
@@ -117,6 +162,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
+      {/* トースト通知 */}
+      <NotificationToast />
+
       <div>
         <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
         <p className="text-sm text-gray-500 mt-1">
@@ -126,6 +174,15 @@ export default async function DashboardPage() {
 
       {/* 承認待ち申請（あれば最上部に） */}
       <PendingReferrals applications={serializedReferrals} />
+
+      {/* Weekly Focus */}
+      <WeeklyFocusTag focus={weeklyFocus} />
+
+      {/* Global Resonance Graph */}
+      <ResonanceGraph stats={sevenDayStats} />
+
+      {/* Answer Tier + 統計ウィジェット */}
+      <AnswerTierCard totalAnswers={totalAnswers} />
 
       {/* 統計ウィジェット */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
