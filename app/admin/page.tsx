@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
 import AdminQuestions from "./AdminQuestions";
 import AdminUsers from "./AdminUsers";
 import AdminFellowApplications from "./AdminFellowApplications";
@@ -6,7 +7,8 @@ import AdminFellowApplications from "./AdminFellowApplications";
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const [allQuestions, users, fellowApplications] = await Promise.all([
+  const [session, allQuestions, users, fellowApplications] = await Promise.all([
+    auth(),
     prisma.question.findMany({
       orderBy: { createdAt: "desc" },
       select: {
@@ -14,21 +16,18 @@ export default async function AdminPage() {
         category: true, level: true, status: true, createdAt: true,
       },
     }),
+    // メールアドレスは取得しない
     prisma.user.findMany({
       orderBy: { createdAt: "desc" },
       select: {
-        id: true, name: true, email: true, role: true, createdAt: true,
+        id: true, name: true, role: true, createdAt: true,
         _count: { select: { answers: true } },
       },
     }),
     prisma.fellowApplication.findMany({
-      orderBy: [
-        // referrer_approved を最上部に
-        { status: "asc" },
-        { createdAt: "desc" },
-      ],
+      orderBy: [{ status: "asc" }, { createdAt: "desc" }],
       include: {
-        applicant: { select: { id: true, name: true, email: true, createdAt: true } },
+        applicant: { select: { id: true, name: true, createdAt: true } },
         referrer:  { select: { id: true, name: true } },
       },
     }).catch(() => []),
@@ -87,7 +86,7 @@ export default async function AdminPage() {
             {users.length}人
           </span>
         </div>
-        <AdminUsers users={users} />
+        <AdminUsers users={users} currentUserRole={session?.user.role ?? "admin"} />
       </section>
     </div>
   );

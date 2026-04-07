@@ -8,6 +8,7 @@ import NotificationBanner from "./components/NotificationBanner";
 import Providers from "./providers";
 import Link from "next/link";
 import Image from "next/image";
+import { isAdmin } from "@/lib/roles";
 
 const notoSansJP = Noto_Sans_JP({
   weight: ["400", "500", "700", "900"],
@@ -86,7 +87,7 @@ export default async function RootLayout({
 
   // 管理者向け: 最終承認待ちの Fellows 候補数
   const adminPendingCount =
-    session?.user.role === "admin"
+    isAdmin(session?.user.role)
       ? await prisma.fellowApplication
           .count({ where: { status: "referrer_approved" } })
           .catch(() => 0)

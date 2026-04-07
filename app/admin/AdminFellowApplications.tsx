@@ -12,7 +12,7 @@ type Application = {
   status: string;
   referrerNote: string | null;
   createdAt: string;
-  applicant: { id: string; name: string | null; email: string | null; createdAt: string };
+  applicant: { id: string; name: string | null; createdAt: string };
   referrer: { id: string; name: string | null };
 };
 
@@ -148,8 +148,7 @@ function ApplicationCard({ app, readonly = false }: { app: Application; readonly
             </span>
           </div>
           <p className="text-xs text-gray-400 truncate mt-0.5">
-            {app.applicant.email} · 紹介: {app.referrer.name} ·{" "}
-            {new Date(app.createdAt).toLocaleDateString("ja-JP")}
+            紹介: {app.referrer.name} · {new Date(app.createdAt).toLocaleDateString("ja-JP")}
           </p>
         </div>
         {/* アクション待ちインジケーター */}
