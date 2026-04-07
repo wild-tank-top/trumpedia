@@ -12,10 +12,10 @@ export const dynamic = "force-dynamic"; // Tier preview requires per-request coo
 
 export default async function FellowsPage() {
   const [session, cookieStore] = await Promise.all([auth(), cookies()]);
-  const isAdmin = session?.user.role === "admin";
+  const isMasterAdmin = session?.user.role === "master_admin";
   const tierPreviewRaw = cookieStore.get("tier_preview")?.value;
   const adminPreviewCount =
-    isAdmin && tierPreviewRaw !== undefined ? parseInt(tierPreviewRaw, 10) : null;
+    isMasterAdmin && tierPreviewRaw !== undefined ? parseInt(tierPreviewRaw, 10) : null;
 
   const fellows = await prisma.user.findMany({
     where: { role: "fellow" },
@@ -52,7 +52,7 @@ export default async function FellowsPage() {
       ) : (
         <FellowFilter
         fellows={fellowsWithYomi}
-        adminId={isAdmin ? session?.user.id : undefined}
+        adminId={isMasterAdmin ? session?.user.id : undefined}
         adminPreviewCount={adminPreviewCount}
       />
       )}

@@ -46,14 +46,15 @@ export default async function ContributorPage({
   if (!user) notFound();
 
   const isOwnProfile = session?.user.id === id;
-  const isAdmin = session?.user.role === "admin";
+  const isAdmin = session?.user.role === "admin" || session?.user.role === "master_admin";
+  const isMasterAdmin = session?.user.role === "master_admin";
   const badge = ROLE_LABELS[user.role] ?? ROLE_LABELS.guest;
 
-  // 管理者が自分のプロフィールを見る場合はTierプレビューを反映
+  // マスター管理者が自分のプロフィールを見る場合はTierプレビューを反映
   const cookieStore = await cookies();
   const tierPreviewRaw = cookieStore.get("tier_preview")?.value;
   const answerCountForTier =
-    isAdmin && isOwnProfile && tierPreviewRaw !== undefined
+    isMasterAdmin && isOwnProfile && tierPreviewRaw !== undefined
       ? parseInt(tierPreviewRaw, 10)
       : user.answers.length;
   const tier = getTier(answerCountForTier);

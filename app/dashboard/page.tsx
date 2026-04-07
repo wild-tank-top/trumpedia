@@ -22,12 +22,13 @@ export default async function DashboardPage() {
 
   const role   = session.user.role;
   const userId = session.user.id;
-  const isAdmin = role === "admin";
+  const isAdmin = role === "admin" || role === "master_admin";
+  const isMasterAdmin = role === "master_admin";
 
   // 管理者向けTierプレビュー（Cookie）
   const cookieStore = await cookies();
   const tierPreviewRaw = cookieStore.get("tier_preview")?.value;
-  const tierPreviewCount = isAdmin && tierPreviewRaw !== undefined
+  const tierPreviewCount = isMasterAdmin && tierPreviewRaw !== undefined
     ? parseInt(tierPreviewRaw, 10)
     : null;
 
@@ -198,7 +199,7 @@ export default async function DashboardPage() {
 
       {/* Answer Tier + 統計ウィジェット */}
       <AnswerTierCard totalAnswers={tierPreviewCount ?? totalAnswers} />
-      {isAdmin && (
+      {isMasterAdmin && (
         <TierPreviewSelector current={tierPreviewCount ?? totalAnswers} />
       )}
 
