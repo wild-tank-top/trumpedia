@@ -1,26 +1,4 @@
-"use client";
-
-import { useState } from "react";
-import { Gift, Cpu, UserCheck, Copy, Check, Quote } from "lucide-react";
-
-const COPY_TEXT = `【Trumpedia開発者からのご招待】
-
-『Trumpedia』は、トランペット奏者の知見/思考/哲学を、
-時間・場所の制約を超えて繋ぐQ&Aプラットフォームです。
-
-日本中にいるトランペット吹きの中で、実際にあなたに会える人は少なく、あなたの優れた知見が一時の会話で消えていってしまうことが本当に惜しい。
-だからこのサイトを作りました。
-
-Fellowとして参加することで——
-
-🎁 現場で磨き上げた知恵を「消えない道標」として、全国の奏者へ届けられます。
-📖 回答を重ねるだけで、あなたの音楽哲学が可視化され、名刺代わりのポートフォリオになります。
-🤖 蓄積された思考をもとにした「AIクローン」プロジェクトも構想中です。
-
-招待コードをお送りします。
-ぜひ一緒に、日本のトランペット界をより自由でクリエイティブなステージへ。
-
-https://trumpedia.vercel.app/`;
+import { Gift, Cpu, UserCheck, Quote } from "lucide-react";
 
 const BENEFITS = [
   {
@@ -44,14 +22,6 @@ const BENEFITS = [
 ] as const;
 
 export default function MissionMessage() {
-  const [copied, setCopied] = useState(false);
-
-  async function handleCopy() {
-    await navigator.clipboard.writeText(COPY_TEXT);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
-  }
-
   return (
     <div className="rounded-2xl overflow-hidden border border-gray-800 bg-gray-950 text-gray-100 shadow-lg">
 
@@ -65,18 +35,6 @@ export default function MissionMessage() {
             Trumpedia 開発者からのメッセージ
           </h2>
         </div>
-        <button
-          onClick={handleCopy}
-          className={[
-            "shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all mt-1",
-            copied
-              ? "bg-teal-500/20 text-teal-300 border border-teal-500/30"
-              : "bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30",
-          ].join(" ")}
-        >
-          {copied ? <Check size={14} /> : <Copy size={14} />}
-          {copied ? "コピーしました！" : "招待文をコピー"}
-        </button>
       </div>
 
       {/* ── メッセージ本文 ──────────────────────────── */}

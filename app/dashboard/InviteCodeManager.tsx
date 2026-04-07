@@ -2,7 +2,28 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Copy, Check, Clock } from "lucide-react";
+import { Plus, Trash2, Copy, Check, Clock, MessageSquarePlus } from "lucide-react";
+
+function buildInviteText(code: string) {
+  return `【Trumpedia開発者からのご招待】
+
+『Trumpedia』は、トランペット奏者の知見/思考/哲学を、
+時間・場所の制約を超えて繋ぐQ&Aプラットフォームです。
+
+日本中にいるトランペット吹きの中で、実際にあなたに会える人は少なく、あなたの優れた知見が一時の会話で消えていってしまうことが本当に惜しい。
+だからこのサイトを作りました。
+
+Fellowとして参加することで——
+
+🎁 現場で磨き上げた知恵を「消えない道標」として、全国の奏者へ届けられます。
+📖 回答を重ねるだけで、あなたの音楽哲学が可視化され、名刺代わりのポートフォリオになります。
+🤖 蓄積された思考をもとにした「AIクローン」プロジェクトも構想中です。
+
+ぜひ一緒に、日本のトランペット界をより自由でクリエイティブなステージへ。
+
+🔑 招待コード：${code}
+https://trumpedia.vercel.app/register`;
+}
 
 type Code = {
   id: string;
@@ -16,10 +37,11 @@ type Code = {
 
 export default function InviteCodeManager({ initialCodes }: { initialCodes: Code[] }) {
   const router  = useRouter();
-  const [codes, setCodes]       = useState<Code[]>(initialCodes);
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState("");
-  const [copied, setCopied]     = useState<string | null>(null);
+  const [codes, setCodes]         = useState<Code[]>(initialCodes);
+  const [loading, setLoading]     = useState(false);
+  const [error, setError]         = useState("");
+  const [copied, setCopied]       = useState<string | null>(null);
+  const [toastVisible, setToast]  = useState(false);
 
   const activeCodes = codes.filter(
     (c) => !c.usedAt && new Date(c.expiresAt) > new Date()
@@ -48,9 +70,11 @@ export default function InviteCodeManager({ initialCodes }: { initialCodes: Code
   }
 
   function handleCopy(code: string) {
-    navigator.clipboard.writeText(code);
+    navigator.clipboard.writeText(buildInviteText(code));
     setCopied(code);
-    setTimeout(() => setCopied(null), 2000);
+    setToast(true);
+    setTimeout(() => setCopied(null), 2500);
+    setTimeout(() => setToast(false), 4000);
   }
 
   function statusLabel(c: Code): { text: string; color: string } {
@@ -70,7 +94,22 @@ export default function InviteCodeManager({ initialCodes }: { initialCodes: Code
   const remainingSlots = 3 - activeCodes.length;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4">
+    <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4 relative">
+
+      {/* コピー完了トースト */}
+      <div
+        className={[
+          "absolute left-1/2 -translate-x-1/2 top-3 z-10",
+          "flex items-center gap-2 px-4 py-2.5 rounded-full shadow-md",
+          "bg-gray-900/90 backdrop-blur-sm text-white text-xs font-medium whitespace-nowrap",
+          "transition-all duration-300",
+          toastVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1 pointer-events-none",
+        ].join(" ")}
+      >
+        <MessageSquarePlus size={13} className="text-teal-400 shrink-0" />
+        招待メッセージをコピーしました。このまま送付ください
+      </div>
+
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-base font-semibold text-gray-800">Fellows招待コード</h2>
@@ -157,7 +196,7 @@ export default function InviteCodeManager({ initialCodes }: { initialCodes: Code
                     <button
                       onClick={() => handleCopy(c.code)}
                       className="p-1.5 text-gray-400 hover:text-teal-600 hover:bg-teal-100 rounded-lg transition-colors"
-                      title="コードをコピー"
+                      title="招待メッセージをコピー"
                     >
                       {copied === c.code ? <Check size={14} /> : <Copy size={14} />}
                     </button>
