@@ -30,19 +30,22 @@ export default function TierPreviewSelector({ current }: { current: number }) {
         </button>
       </div>
       <div className="flex flex-wrap gap-1.5">
-        {TIERS.map((t) => (
-          <button
-            key={t.min}
-            onClick={() => handleSelect(t.min)}
-            className={`text-xs px-3 py-1.5 rounded-full border-2 font-medium transition-colors ${
-              current >= t.min && (TIERS[TIERS.indexOf(t) + 1]?.min ?? Infinity) > current
-                ? `${t.border} bg-white text-gray-700 shadow-sm`
-                : "border-gray-200 bg-white text-gray-400 hover:border-gray-300"
-            }`}
-          >
-            {t.min}件〜
-          </button>
-        ))}
+        {TIERS.map((t, i) => {
+          const isActive = current >= t.min && (TIERS[i + 1]?.min ?? Infinity) > current;
+          return (
+            <button
+              key={t.min}
+              onClick={() => handleSelect(t.min)}
+              className={`text-xs px-3 py-1.5 rounded-full border-2 font-medium transition-all ${
+                isActive
+                  ? `${t.border} ${t.bg} text-gray-700 shadow-sm scale-105`
+                  : "border-gray-200 bg-white text-gray-400 hover:border-gray-300"
+              }`}
+            >
+              {t.min}件〜
+            </button>
+          );
+        })}
       </div>
     </div>
   );

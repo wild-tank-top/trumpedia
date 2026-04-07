@@ -10,7 +10,7 @@ export default function AnswerTierCard({ totalAnswers }: { totalAnswers: number 
     : 100;
 
   return (
-    <div className={`border-2 rounded-2xl p-5 transition-all ${tier.border} ${tier.glow}`}>
+    <div className={`border-2 rounded-2xl p-5 transition-all ${tier.bg} ${tier.border} ${tier.glow}`}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">

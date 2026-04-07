@@ -66,7 +66,7 @@ export default async function ContributorPage({
   return (
     <div>
       {/* プロフィールヘッダー */}
-      <div className={`bg-white rounded-xl border-2 p-6 mb-6 ${tier.border} ${tier.glow}`}>
+      <div className={`rounded-xl border-2 p-6 mb-6 ${tier.bg} ${tier.border} ${tier.glow}`}>
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
             <Avatar src={user.image} name={user.name} size="lg" />
