@@ -17,7 +17,6 @@ const notoSansJP = Noto_Sans_JP({
   preload: false, // 日本語フォントは全グリフのプリロードを省略
 });
 
-export const dynamic = "force-dynamic";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -78,6 +77,7 @@ export default async function RootLayout({
             question: { select: { id: true, title: true } },
           },
           orderBy: { createdAt: "desc" },
+          take: 20,
         })
         .catch(() => [])
     : [];

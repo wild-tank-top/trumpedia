@@ -101,6 +101,10 @@ model Question {
   supplements   QuestionSupplement[]
   notifications Notification[]
   user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([status, createdAt(sort: Desc)])
+  @@index([userId])
 }
 
 model Answer {
@@ -119,6 +123,10 @@ model Answer {
   question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   likes    Like[]
+
+  @@index([questionId])
+  @@index([userId])
+  @@index([createdAt(sort: Desc)])
 }
 
 model Like {
@@ -131,6 +139,7 @@ model Like {
   answer Answer @relation(fields: [answerId], references: [id], onDelete: Cascade)
 
   @@unique([userId, answerId])
+  @@index([answerId])
 }
 
 model QuestionSupplement {
@@ -154,6 +163,7 @@ model Notification {
   question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
   @@unique([userId, questionId, type])
+  @@index([userId, isRead])
 }
 
 // ── Fellowsネットワーク ─────────────────────────────
@@ -184,6 +194,9 @@ model FellowApplication {
   referrerNote String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+
+  @@index([referrerId, status])
+  @@index([status])
 }
 
 
@@ -192,4 +205,6 @@ model FellowApplication {
 model PageView {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
+
+  @@index([createdAt(sort: Desc)])
 }

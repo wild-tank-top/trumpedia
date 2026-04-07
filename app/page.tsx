@@ -93,10 +93,11 @@ export default async function HomePage({
       },
     }),
     prisma.question.count({ where }),
-    // AIナビゲーター用：カテゴリ・検索に関わらず全承認済み質問
+    // AIナビゲーター用：カテゴリ・検索に関わらず全承認済み質問（上限250件）
     prisma.question.findMany({
       where: { status: "approved" },
       orderBy: { createdAt: "desc" },
+      take: 250,
       select: {
         id: true, title: true, content: true,
         category: true, level: true, createdAt: true, thumbnail: true,

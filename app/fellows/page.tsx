@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: "Fellows | Trumpedia",
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 1800; // 30分キャッシュ
 
 export default async function FellowsPage() {
   const fellows = await prisma.user.findMany({
