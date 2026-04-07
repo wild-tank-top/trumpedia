@@ -115,7 +115,7 @@ export default async function DashboardPage() {
       start.setHours(0, 0, 0, 0);
       const end = new Date(start);
       end.setHours(23, 59, 59, 999);
-      const count = await prisma.answer
+      const count = await prisma.pageView
         .count({ where: { createdAt: { gte: start, lte: end } } })
         .catch(() => 0);
       return {

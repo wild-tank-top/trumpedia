@@ -185,3 +185,11 @@ model FellowApplication {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 }
+
+
+// ── アクセス解析 ──────────────────────────────────────
+
+model PageView {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+}

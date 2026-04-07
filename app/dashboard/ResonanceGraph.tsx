@@ -40,12 +40,12 @@ export default function ResonanceGraph({ stats }: { stats: DayStat[] }) {
           <Activity size={15} className="text-indigo-500" />
           <h2 className="text-sm font-semibold text-gray-700">Global Resonance</h2>
           <span className="text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">
-            直近7日間の回答数
+            直近7日間のアクセス数
           </span>
         </div>
         <span className="text-xs font-semibold text-indigo-600">
           {totalSessions}
-          <span className="font-normal text-gray-400 ml-0.5">件</span>
+          <span className="font-normal text-gray-400 ml-0.5">PV</span>
         </span>
       </div>
 

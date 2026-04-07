@@ -29,11 +29,14 @@ export async function POST(
     return NextResponse.json({ error: "質問が見つかりません" }, { status: 404 });
   }
 
-  const updated = await prisma.question.update({
-    where: { id: questionId },
-    data: { views: { increment: 1 } },
-    select: { views: true },
-  });
+  const [updated] = await prisma.$transaction([
+    prisma.question.update({
+      where: { id: questionId },
+      data: { views: { increment: 1 } },
+      select: { views: true },
+    }),
+    prisma.pageView.create({ data: {} }),
+  ]);
 
   return NextResponse.json({ views: updated.views });
 }
