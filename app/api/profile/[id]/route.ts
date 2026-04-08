@@ -59,7 +59,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "リクエストの形式が正しくありません" }, { status: 400 });
   }
 
-  const { name, yomi, bio, career, twitter, youtube, instagram, website } = body as Record<string, string | undefined>;
+  const { name, yomi, bio, career, dream, twitter, youtube, instagram, website } = body as Record<string, string | undefined>;
 
   // URLフィールドのバリデーション
   const urlFields: { value: string | undefined; label: string }[] = [
@@ -82,6 +82,9 @@ export async function PUT(req: NextRequest, { params }: Params) {
   if (career && career.length > 500) {
     return NextResponse.json({ error: "経歴は500文字以内で入力してください" }, { status: 400 });
   }
+  if (dream && dream.length > 500) {
+    return NextResponse.json({ error: "夢・目標は500文字以内で入力してください" }, { status: 400 });
+  }
 
   try {
     // callback形式のtransaction（エラー時は自動ロールバック）
@@ -97,6 +100,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
           yomi: yomi?.trim() ?? "",
           bio: bio ?? "",
           career: career ?? "",
+          dream: dream ?? "",
           twitter: twitter ?? "",
           youtube: youtube ?? "",
           instagram: instagram ?? "",
@@ -106,6 +110,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
           yomi: yomi?.trim() ?? "",
           bio: bio ?? "",
           career: career ?? "",
+          dream: dream ?? "",
           twitter: twitter ?? "",
           youtube: youtube ?? "",
           instagram: instagram ?? "",

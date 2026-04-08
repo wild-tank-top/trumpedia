@@ -9,6 +9,7 @@ type ProfileData = {
   yomi: string;
   bio: string;
   career: string;
+  dream: string;
   twitter: string;
   youtube: string;
   instagram: string;
@@ -97,6 +98,17 @@ export default function ProfileEditForm({
           value={form.career}
           onChange={handleChange}
           rows={3}
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
+        />
+      </Field>
+
+      <Field label="夢・目標" hint="音楽家として成し遂げたいこと、目指している姿（任意）">
+        <textarea
+          name="dream"
+          value={form.dream}
+          onChange={handleChange}
+          rows={3}
+          placeholder="例：地元の子どもたちにトランペットの楽しさを伝えるコンサートを開きたい"
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
         />
       </Field>

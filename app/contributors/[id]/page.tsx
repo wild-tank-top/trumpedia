@@ -6,7 +6,8 @@ import { cookies } from "next/headers";
 import Avatar from "@/app/components/Avatar";
 import { getTier } from "@/lib/answerTier";
 import TierCornerOrnament from "@/app/components/TierCornerOrnament";
-import { isAdmin as isAdminRole, isMasterAdmin as isMasterAdminRole, ROLE_LABELS } from "@/lib/roles";
+import { isAdmin as isAdminRole, isFellow as isFellowRole, isMasterAdmin as isMasterAdminRole, ROLE_LABELS } from "@/lib/roles";
+import DeleteAccountButton from "./edit/DeleteAccountButton";
 
 export default async function ContributorPage({
   params,
@@ -43,6 +44,12 @@ export default async function ContributorPage({
   const isOwnProfile = session?.user.id === id;
   const isAdmin = isAdminRole(session?.user.role);
   const isMasterAdmin = isMasterAdminRole(session?.user.role);
+  // 編集ボタンは Fellow 以上（自分のみ）または admin が表示
+  const canEdit = isOwnProfile
+    ? (isFellowRole(session?.user.role) || isAdmin)
+    : isAdmin;
+  // ゲストが自分のプロフィールを見ている場合
+  const isOwnGuestProfile = isOwnProfile && session?.user.role === "guest";
   const badge = ROLE_LABELS[user.role] ?? ROLE_LABELS.guest;
 
   // マスター管理者が自分のプロフィールを見る場合はTierプレビューを反映
@@ -81,7 +88,7 @@ export default async function ContributorPage({
             </div>
           </div>
 
-          {(isOwnProfile || isAdmin) && (
+          {canEdit && (
             <Link
               href={`/contributors/${id}/edit`}
               className="text-sm border border-gray-300 text-gray-600 px-4 py-1.5 rounded-full hover:bg-gray-50 transition-colors"
@@ -91,14 +98,20 @@ export default async function ContributorPage({
           )}
         </div>
 
-        {/* バイオ・経歴 */}
+        {/* バイオ・経歴・夢 */}
         {user.profile?.bio && (
-          <p className="mt-4 text-sm text-gray-700 whitespace-pre-wrap">{user.profile.bio}</p>
+          <p className="mt-4 text-sm text-gray-700 whitespace-pre-wrap break-words">{user.profile.bio}</p>
         )}
         {user.profile?.career && (
           <div className="mt-3">
             <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">経歴</p>
-            <p className="text-sm text-gray-700 whitespace-pre-wrap">{user.profile.career}</p>
+            <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">{user.profile.career}</p>
+          </div>
+        )}
+        {user.profile?.dream && (
+          <div className="mt-3">
+            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">夢・目標</p>
+            <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">{user.profile.dream}</p>
           </div>
         )}
 
@@ -147,7 +160,20 @@ export default async function ContributorPage({
         </div>
       </div>
 
-      {/* 回答一覧 */}
+      {/* ゲスト自身のプロフィール：退会ボタンのみ */}
+      {isOwnGuestProfile && (
+        <div className="mt-4 border-t border-gray-200 pt-5">
+          <p className="text-sm font-medium text-gray-700 mb-1">アカウント設定</p>
+          <p className="text-xs text-gray-400 mb-3">
+            アカウントを削除すると、投稿した質問はサイトに残ります。
+          </p>
+          <DeleteAccountButton />
+        </div>
+      )}
+
+      {/* 回答一覧（ゲスト自身のプロフィールでは非表示） */}
+      {!isOwnGuestProfile && (
+      <>
       <h2 className="text-lg font-bold text-gray-800 mb-3">
         回答一覧（{visibleAnswers.length}件）
       </h2>
@@ -199,6 +225,8 @@ export default async function ContributorPage({
             );
           })}
         </div>
+      )}
+      </>
       )}
     </div>
   );

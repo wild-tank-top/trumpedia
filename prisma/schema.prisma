@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-provider = "postgresql"
-url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ── NextAuth 必須モデル ─────────────────────────────
@@ -15,21 +15,21 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
-  password      String?           // Credentials認証用（ハッシュ済み）
+  password      String? // Credentials認証用（ハッシュ済み）
   role          String    @default("guest") // guest / fellow / admin
   createdAt     DateTime  @default(now())
 
-  accounts           Account[]
-  sessions           Session[]
-  answers            Answer[]
-  profile            Profile?
-  questions          Question[]
-  likes              Like[]
-  notifications      Notification[]
-  issuedInviteCodes  InviteCode[]        @relation("IssuedInviteCodes")
-  usedInviteCode     InviteCode?         @relation("UsedInviteCode")
-  fellowApplication  FellowApplication?  @relation("FellowApplications")
-  fellowReferrals    FellowApplication[] @relation("FellowReferrals")
+  accounts          Account[]
+  sessions          Session[]
+  answers           Answer[]
+  profile           Profile?
+  questions         Question[]
+  likes             Like[]
+  notifications     Notification[]
+  issuedInviteCodes InviteCode[]        @relation("IssuedInviteCodes")
+  usedInviteCode    InviteCode?         @relation("UsedInviteCode")
+  fellowApplication FellowApplication?  @relation("FellowApplications")
+  fellowReferrals   FellowApplication[] @relation("FellowReferrals")
 }
 
 model Account {
@@ -73,9 +73,10 @@ model VerificationToken {
 model Profile {
   id        Int    @id @default(autoincrement())
   userId    String @unique
-  yomi      String @default("")  // 名前のよみ（ひらがな）— 50音順ソート・フィルタに使用
+  yomi      String @default("") // 名前のよみ（ひらがな）— 50音順ソート・フィルタに使用
   bio       String @default("")
   career    String @default("")
+  dream     String @default("") // 夢・目標
   twitter   String @default("")
   youtube   String @default("")
   instagram String @default("")
@@ -85,22 +86,22 @@ model Profile {
 }
 
 model Question {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String   // 詳細・補足（質問の意図・背景）
-  category  String
-  level     String
-  status    String   @default("pending") // pending / approved / rejected
-  views          Int      @default(0)         // 閲覧数（imp）
-  thumbnail      String?                      // AIサムネイル画像URL
-  userId         String?  // 投稿者ID
-  createdAt      DateTime @default(now())
-  lastAnsweredAt DateTime?                    // 最新回答日（ソート用・非正規化）
+  id             Int       @id @default(autoincrement())
+  title          String
+  content        String // 詳細・補足（質問の意図・背景）
+  category       String
+  level          String
+  status         String    @default("pending") // pending / approved / rejected
+  views          Int       @default(0) // 閲覧数（imp）
+  thumbnail      String? // AIサムネイル画像URL
+  userId         String? // 投稿者ID
+  createdAt      DateTime  @default(now())
+  lastAnsweredAt DateTime? // 最新回答日（ソート用・非正規化）
 
   answers       Answer[]
   supplements   QuestionSupplement[]
   notifications Notification[]
-  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user          User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([status])
   @@index([status, createdAt(sort: Desc)])
@@ -169,36 +170,35 @@ model Notification {
 // ── Fellowsネットワーク ─────────────────────────────
 
 model InviteCode {
-  id        String    @id @default(cuid())
-  code      String    @unique
-  issuerId  String
-  issuer    User      @relation("IssuedInviteCodes", fields: [issuerId], references: [id], onDelete: Cascade)
-  expiresAt DateTime
-  usedAt    DateTime?
-  usedById  String?   @unique
-  usedBy    User?     @relation("UsedInviteCode", fields: [usedById], references: [id], onDelete: SetNull)
+  id          String             @id @default(cuid())
+  code        String             @unique
+  issuerId    String
+  issuer      User               @relation("IssuedInviteCodes", fields: [issuerId], references: [id], onDelete: Cascade)
+  expiresAt   DateTime
+  usedAt      DateTime?
+  usedById    String?            @unique
+  usedBy      User?              @relation("UsedInviteCode", fields: [usedById], references: [id], onDelete: SetNull)
   application FellowApplication?
-  createdAt DateTime  @default(now())
+  createdAt   DateTime           @default(now())
 }
 
 model FellowApplication {
-  id           String    @id @default(cuid())
-  applicantId  String    @unique
-  applicant    User      @relation("FellowApplications", fields: [applicantId], references: [id], onDelete: Cascade)
+  id           String     @id @default(cuid())
+  applicantId  String     @unique
+  applicant    User       @relation("FellowApplications", fields: [applicantId], references: [id], onDelete: Cascade)
   referrerId   String
-  referrer     User      @relation("FellowReferrals", fields: [referrerId], references: [id])
-  inviteCodeId String    @unique
+  referrer     User       @relation("FellowReferrals", fields: [referrerId], references: [id])
+  inviteCodeId String     @unique
   inviteCode   InviteCode @relation(fields: [inviteCodeId], references: [id])
-  status       String    @default("pending")
+  status       String     @default("pending")
   // pending → referrer_approved → admin_completed
   referrerNote String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 
   @@index([referrerId, status])
   @@index([status])
 }
-
 
 // ── アクセス解析 ──────────────────────────────────────
 
