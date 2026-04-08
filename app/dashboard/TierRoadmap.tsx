@@ -1,8 +1,8 @@
 import { getTier, TIERS } from "@/lib/answerTier";
 import { Lock } from "lucide-react";
 
-// ランク名をデフォルト表示するインデックス上限（0〜5 = Yellow Chartreuse まで）
-const ALWAYS_VISIBLE_UP_TO = 5;
+// ランク名をデフォルト表示するインデックス上限（0〜4 = 悠久の琥珀・マデイラ まで）
+const ALWAYS_VISIBLE_UP_TO = 4;
 
 export default function TierRoadmap({ totalAnswers }: { totalAnswers: number }) {
   const currentTier = getTier(totalAnswers);

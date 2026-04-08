@@ -49,7 +49,7 @@ export const TIERS = [
   },
   {
     min: 35,
-    label: "アンバー・マデイラ", en: "Amber Madeira",
+    label: "悠久の琥珀・マデイラ", en: "Amber Madeira",
     shape:  "relative overflow-hidden rounded-2xl border-2 ring-2 ring-offset-2 ring-orange-300 ring-offset-orange-50",
     bg:     "bg-orange-50",
     border: "border-orange-400",
@@ -61,7 +61,7 @@ export const TIERS = [
   },
   {
     min: 50,
-    label: "イエロー・シャルトルーズ", en: "Yellow Chartreuse",
+    label: "天上の翠黄・シャルトリューズ", en: "Citrine Chartreuse",
     shape:  "relative overflow-hidden rounded-2xl border-2 ring-2 ring-offset-2 ring-lime-400 ring-offset-lime-50",
     bg:     "bg-lime-50",
     border: "border-lime-500",
@@ -73,7 +73,7 @@ export const TIERS = [
   },
   {
     min: 75,
-    label: "ローズ・シャンパーニュ", en: "Rose Champagne",
+    label: "女王のローズ・シャンパーニュ", en: "Rose Champagne",
     shape:  "relative overflow-hidden rounded-3xl border-2 ring-4 ring-offset-2 ring-rose-300 ring-offset-rose-50",
     bg:     "bg-rose-50",
     border: "border-rose-400",
