@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { isAdmin } from "@/lib/roles";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
