@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Session } from "next-auth";
 import { getTier, TIERS } from "@/lib/answerTier";
+import { isFellow as isFellowRole, isAdmin as isAdminRole } from "@/lib/roles";
 
 type ExistingAnswer = {
   id: number;
@@ -37,7 +38,7 @@ export default function AnswerForm({
   if (!session) return null;
 
   // Fellowでない
-  if (session.user?.role !== "fellow" && session.user?.role !== "admin") {
+  if (!isFellowRole(session.user?.role) && !isAdminRole(session.user?.role)) {
     return (
       <div className="text-center py-6 text-gray-500">
         <p className="text-sm">

@@ -22,7 +22,7 @@ export default async function EditQuestionPage({
   if (!question) notFound();
   if (!session) redirect("/login");
 
-  if (session.user.id !== question.userId && session.user.role !== "admin") {
+  if (session.user.id !== question.userId && !isAdmin(session.user.role)) {
     notFound();
   }
 

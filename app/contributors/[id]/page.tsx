@@ -6,12 +6,7 @@ import { cookies } from "next/headers";
 import Avatar from "@/app/components/Avatar";
 import { getTier } from "@/lib/answerTier";
 import TierCornerOrnament from "@/app/components/TierCornerOrnament";
-
-const ROLE_LABELS: Record<string, { label: string; color: string }> = {
-  admin: { label: "管理者", color: "bg-red-100 text-red-700" },
-  fellow: { label: "Fellow", color: "bg-amber-100 text-amber-700" },
-  guest: { label: "ゲスト", color: "bg-gray-100 text-gray-500" },
-};
+import { isAdmin as isAdminRole, isMasterAdmin as isMasterAdminRole, ROLE_LABELS } from "@/lib/roles";
 
 export default async function ContributorPage({
   params,
@@ -46,8 +41,8 @@ export default async function ContributorPage({
   if (!user) notFound();
 
   const isOwnProfile = session?.user.id === id;
-  const isAdmin = session?.user.role === "admin" || session?.user.role === "master_admin";
-  const isMasterAdmin = session?.user.role === "master_admin";
+  const isAdmin = isAdminRole(session?.user.role);
+  const isMasterAdmin = isMasterAdminRole(session?.user.role);
   const badge = ROLE_LABELS[user.role] ?? ROLE_LABELS.guest;
 
   // マスター管理者が自分のプロフィールを見る場合はTierプレビューを反映

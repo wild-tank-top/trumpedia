@@ -1,3 +1,4 @@
+import { isAdmin } from "@/lib/roles";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -14,7 +15,7 @@ export default async function EditProfilePage({
 
   // 認可チェック（本人 or admin）
   if (!session) redirect("/login");
-  if (session.user.id !== id && session.user.role !== "admin") {
+  if (session.user.id !== id && !isAdmin(session.user.role)) {
     redirect(`/contributors/${id}`);
   }
 

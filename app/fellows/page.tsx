@@ -18,7 +18,7 @@ export default async function FellowsPage() {
     isMasterAdmin && tierPreviewRaw !== undefined ? parseInt(tierPreviewRaw, 10) : null;
 
   const fellows = await prisma.user.findMany({
-    where: { role: "fellow" },
+    where: { role: { in: ["fellow", "admin_fellow"] } },
     select: {
       id: true,
       name: true,

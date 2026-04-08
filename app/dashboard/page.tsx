@@ -14,6 +14,7 @@ import AnswerTierCard from "./AnswerTierCard";
 import NotificationToast from "./NotificationToast";
 import TierPreviewSelector from "./TierPreviewSelector";
 import TierRoadmap from "./TierRoadmap";
+import { isAdmin as isAdminRole, isMasterAdmin as isMasterAdminRole } from "@/lib/roles";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
@@ -23,8 +24,8 @@ export default async function DashboardPage() {
 
   const role   = session.user.role;
   const userId = session.user.id;
-  const isAdmin = role === "admin" || role === "master_admin";
-  const isMasterAdmin = role === "master_admin";
+  const isAdmin = isAdminRole(role);
+  const isMasterAdmin = isMasterAdminRole(role);
 
   // 管理者向けTierプレビュー（Cookie）
   const cookieStore = await cookies();

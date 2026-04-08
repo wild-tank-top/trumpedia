@@ -1,3 +1,4 @@
+import { isAdmin } from "@/lib/roles";
 /**
  * /api/profile/[id]/avatar
  * 後方互換エンドポイント。実処理は /api/upload/avatar に委譲する。
@@ -17,7 +18,7 @@ export async function POST(
   if (!session) {
     return NextResponse.json({ error: "ログインが必要です" }, { status: 401 });
   }
-  if (session.user.id !== id && session.user.role !== "admin") {
+  if (session.user.id !== id && !isAdmin(session.user.role)) {
     return NextResponse.json({ error: "権限がありません" }, { status: 403 });
   }
 

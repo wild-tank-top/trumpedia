@@ -1,3 +1,4 @@
+import { isAdmin } from "@/lib/roles";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -11,7 +12,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session || session.user.role !== "admin") {
+  if (!session || !isAdmin(session.user.role)) {
     return NextResponse.json({ error: "管理者権限が必要です" }, { status: 403 });
   }
 
@@ -40,7 +41,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session || session.user.role !== "admin") {
+  if (!session || !isAdmin(session.user.role)) {
     return NextResponse.json({ error: "管理者権限が必要です" }, { status: 403 });
   }
 

@@ -1,3 +1,4 @@
+import { isAdmin } from "@/lib/roles";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -47,7 +48,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
   if (!session) {
     return NextResponse.json({ error: "ログインが必要です" }, { status: 401 });
   }
-  if (session.user.id !== id && session.user.role !== "admin") {
+  if (session.user.id !== id && !isAdmin(session.user.role)) {
     return NextResponse.json({ error: "権限がありません" }, { status: 403 });
   }
 

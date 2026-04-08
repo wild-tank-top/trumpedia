@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { isAdmin, isMasterAdmin, requiresMasterAdmin } from "@/lib/roles";
 
-const VALID_ROLES = ["guest", "fellow", "admin", "master_admin"] as const;
+const VALID_ROLES = ["guest", "fellow", "admin", "admin_fellow", "master_admin"] as const;
 type Role = (typeof VALID_ROLES)[number];
 
 // PATCH /api/admin/users/[id] - ロール変更

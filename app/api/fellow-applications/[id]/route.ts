@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { isAdmin } from "@/lib/roles";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -49,7 +50,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   // ── 管理者による最終承認 ───────────────────────────────────────
   if (action === "complete") {
-    if (session.user.role !== "admin") {
+    if (!isAdmin(session.user.role)) {
       return NextResponse.json({ error: "権限がありません" }, { status: 403 });
     }
     if (application.status !== "referrer_approved") {
@@ -74,7 +75,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   // ── 管理者による却下 ──────────────────────────────────────────
   if (action === "reject") {
-    if (session.user.role !== "admin") {
+    if (!isAdmin(session.user.role)) {
       return NextResponse.json({ error: "権限がありません" }, { status: 403 });
     }
 

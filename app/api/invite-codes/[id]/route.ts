@@ -1,3 +1,4 @@
+import { isAdmin } from "@/lib/roles";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -12,7 +13,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
 
   const code = await prisma.inviteCode.findUnique({ where: { id } });
   if (!code) return NextResponse.json({ error: "コードが見つかりません" }, { status: 404 });
-  if (code.issuerId !== session.user.id && session.user.role !== "admin") {
+  if (code.issuerId !== session.user.id && !isAdmin(session.user.role)) {
     return NextResponse.json({ error: "権限がありません" }, { status: 403 });
   }
   if (code.usedAt) {

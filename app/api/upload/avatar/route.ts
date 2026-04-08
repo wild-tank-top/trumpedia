@@ -1,3 +1,4 @@
+import { isAdmin } from "@/lib/roles";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
   const targetUserId = (formData.get("userId") as string | null) ?? session.user.id;
 
   // ── 認可チェック ──────────────────────────────────────
-  if (targetUserId !== session.user.id && session.user.role !== "admin") {
+  if (targetUserId !== session.user.id && !isAdmin(session.user.role)) {
     return NextResponse.json({ error: "権限がありません" }, { status: 403 });
   }
 

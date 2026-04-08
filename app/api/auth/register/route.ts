@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { nanoid } from "nanoid";
+import { canIssueInvite } from "@/lib/roles";
 
 export async function POST(req: NextRequest) {
   let name: string, email: string, password: string, inviteCode: string | undefined;
@@ -47,7 +48,7 @@ export async function POST(req: NextRequest) {
           code &&
           !code.usedAt &&
           code.expiresAt > new Date() &&
-          (code.issuer.role === "fellow" || code.issuer.role === "admin")
+          canIssueInvite(code.issuer.role)
         ) {
           await prisma.$transaction([
             prisma.inviteCode.update({

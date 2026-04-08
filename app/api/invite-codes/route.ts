@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { nanoid } from "nanoid";
+import { canIssueInvite } from "@/lib/roles";
 
 const MAX_ACTIVE_CODES = 3;
 const EXPIRE_HOURS = 24;
@@ -21,7 +22,7 @@ async function countActiveCodes(issuerId: string) {
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "ログインが必要です" }, { status: 401 });
-  if (session.user.role !== "fellow" && session.user.role !== "admin") {
+  if (!canIssueInvite(session.user.role)) {
     return NextResponse.json({ error: "権限がありません" }, { status: 403 });
   }
 
@@ -42,7 +43,7 @@ export async function GET() {
 export async function POST() {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "ログインが必要です" }, { status: 401 });
-  if (session.user.role !== "fellow" && session.user.role !== "admin") {
+  if (!canIssueInvite(session.user.role)) {
     return NextResponse.json({ error: "権限がありません" }, { status: 403 });
   }
 

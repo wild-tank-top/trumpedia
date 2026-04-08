@@ -14,18 +14,20 @@ type User = {
 };
 
 const ROLES = [
-  { value: "guest",        label: "ゲスト",          color: "bg-gray-100 text-gray-600"    },
-  { value: "fellow",       label: "Fellow",          color: "bg-amber-100 text-amber-700"  },
-  { value: "admin",        label: "管理者",           color: "bg-red-100 text-red-700"      },
-  { value: "master_admin", label: "マスター管理者",   color: "bg-red-200 text-red-800"      },
+  { value: "guest",        label: "ゲスト",           color: "bg-gray-100 text-gray-600"      },
+  { value: "fellow",       label: "Fellow",           color: "bg-amber-100 text-amber-700"    },
+  { value: "admin",        label: "管理者",            color: "bg-red-100 text-red-700"        },
+  { value: "admin_fellow", label: "管理者 / Fellow",  color: "bg-purple-100 text-purple-700"  },
+  { value: "master_admin", label: "マスター管理者",    color: "bg-red-200 text-red-800"        },
 ] as const;
 
 const FILTER_TABS = [
-  { value: "all",          label: "全員"         },
-  { value: "fellow",       label: "Fellow"       },
-  { value: "guest",        label: "ゲスト"       },
-  { value: "admin",        label: "管理者"       },
-  { value: "master_admin", label: "マスター管理者" },
+  { value: "all",          label: "全員"            },
+  { value: "fellow",       label: "Fellow"          },
+  { value: "guest",        label: "ゲスト"          },
+  { value: "admin",        label: "管理者"          },
+  { value: "admin_fellow", label: "管理者 / Fellow" },
+  { value: "master_admin", label: "マスター管理者"   },
 ] as const;
 
 type Filter = (typeof FILTER_TABS)[number]["value"];
@@ -34,6 +36,7 @@ function Initials({ name, role }: { name: string | null; role: string }) {
   const colorMap: Record<string, string> = {
     master_admin: "bg-red-200 text-red-800",
     admin:        "bg-red-100 text-red-700",
+    admin_fellow: "bg-purple-100 text-purple-700",
     fellow:       "bg-amber-100 text-amber-700",
     guest:        "bg-gray-100 text-gray-500",
   };
@@ -79,6 +82,7 @@ export default function AdminUsers({
     fellow:       users.filter((u) => u.role === "fellow").length,
     guest:        users.filter((u) => u.role === "guest").length,
     admin:        users.filter((u) => u.role === "admin").length,
+    admin_fellow: users.filter((u) => u.role === "admin_fellow").length,
     master_admin: users.filter((u) => u.role === "master_admin").length,
   }), [users]);
 

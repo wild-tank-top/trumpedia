@@ -17,6 +17,7 @@ import TextThumbnail from "@/app/components/TextThumbnail";
 import ThumbnailImage from "@/app/components/ThumbnailImage";
 import { isManagedThumbnail, getAutoThumbnail } from "@/lib/thumbnails";
 import { getRelatedQuestions } from "@/lib/relatedQuestions";
+import { isAdmin as isAdminRole, isFellow as isFellowRole } from "@/lib/roles";
 
 type AnswerWithMeta = Answer & {
   user: { name: string | null; id: string; image: string | null };
@@ -102,10 +103,10 @@ export default async function QuestionDetailPage({
     .catch(() => []);
 
   const isOwner = session?.user.id != null && session?.user.id === question.userId;
-  const canEdit = isOwner || session?.user.role === "admin";
+  const canEdit = isOwner || isAdminRole(session?.user.role);
   const isLocked = question.answers.length > 0; // 回答があると質問本文は編集不可
   const ls = LEVEL_STYLES[question.level] ?? DEFAULT_LEVEL_STYLE;
-  const isFellow = session?.user.role === "fellow" || session?.user.role === "admin";
+  const isFellow = isFellowRole(session?.user.role) || isAdminRole(session?.user.role);
 
   // ログイン中ユーザーの既存回答を検出
   const myExistingAnswer = session?.user.id
@@ -125,7 +126,7 @@ export default async function QuestionDetailPage({
         .catch(() => new Set<number>())
     : new Set<number>();
 
-  if (question.status !== "approved" && session?.user.role !== "admin" && !isOwner) {
+  if (question.status !== "approved" && !isAdminRole(session?.user.role) && !isOwner) {
     notFound();
   }
 
@@ -299,7 +300,7 @@ export default async function QuestionDetailPage({
                     initialLiked={myLikedAnswerIds.has(answer.id)}
                     isLoggedIn={!!session}
                   />
-                  {(session?.user.id === answer.userId || session?.user.role === "admin") && (
+                  {(session?.user.id === answer.userId || isAdminRole(session?.user.role)) && (
                     <DeleteAnswerButton answerId={answer.id} />
                   )}
                 </div>

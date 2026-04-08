@@ -1,3 +1,4 @@
+import { isFellow, isAdmin } from "@/lib/roles";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -5,7 +6,7 @@ import type { Session } from "next-auth";
 
 function requireFellow(session: Session | null) {
   if (!session) return NextResponse.json({ error: "ログインが必要です" }, { status: 401 });
-  if (session.user.role !== "fellow" && session.user.role !== "admin") {
+  if (!isFellow(session.user.role) && !isAdmin(session.user.role)) {
     return NextResponse.json({ error: "回答はFellowユーザーのみ可能です" }, { status: 403 });
   }
   return null;

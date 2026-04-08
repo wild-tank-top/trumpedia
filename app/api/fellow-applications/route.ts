@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { nanoid } from "nanoid";
+import { canIssueInvite } from "@/lib/roles";
 
 /** POST: 招待コードで Fellows 参加申請 */
 export async function POST(req: NextRequest) {
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest) {
   if (inviteCode.issuerId === session.user.id) {
     return NextResponse.json({ error: "自分が発行したコードは使用できません" }, { status: 400 });
   }
-  if (inviteCode.issuer.role !== "fellow" && inviteCode.issuer.role !== "admin") {
+  if (!canIssueInvite(inviteCode.issuer.role)) {
     return NextResponse.json({ error: "このコードは有効ではありません" }, { status: 400 });
   }
 

@@ -1,3 +1,4 @@
+import { isAdmin } from "@/lib/roles";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
@@ -35,7 +36,7 @@ export async function PUT(
     return NextResponse.json({ error: "質問が見つかりません" }, { status: 404 });
   }
 
-  if (session.user.id !== question.userId && session.user.role !== "admin") {
+  if (session.user.id !== question.userId && !isAdmin(session.user.role)) {
     return NextResponse.json({ error: "権限なし" }, { status: 403 });
   }
 
@@ -88,7 +89,7 @@ export async function DELETE(
     return NextResponse.json({ error: "質問が見つかりません" }, { status: 404 });
   }
 
-  if (session.user.id !== question.userId && session.user.role !== "admin") {
+  if (session.user.id !== question.userId && !isAdmin(session.user.role)) {
     return NextResponse.json({ error: "権限がありません" }, { status: 403 });
   }
 

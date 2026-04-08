@@ -10,13 +10,7 @@ import {
   Menu, X, Users, PenLine, Settings,
   LogOut, LogIn, UserPlus, LayoutDashboard, ListOrdered, User,
 } from "lucide-react";
-
-const ROLE_LABELS = {
-  master_admin: { label: "マスター管理者", color: "bg-red-200 text-red-800" },
-  admin:        { label: "管理者",         color: "bg-red-100 text-red-700" },
-  fellow:       { label: "Fellow",         color: "bg-amber-100 text-amber-700" },
-  guest:        { label: "ゲスト",         color: "bg-gray-100 text-gray-500" },
-} as const;
+import { ROLE_LABELS, isAdmin, isFellow } from "@/lib/roles";
 
 type Role = keyof typeof ROLE_LABELS;
 
@@ -119,12 +113,12 @@ export default function HeaderNav({
                         マイページ
                       </DropdownLink>
                     )}
-                    {(role === "fellow" || role === "admin" || role === "master_admin") && (
+                    {(isFellow(role) || isAdmin(role)) && (
                       <DropdownLink href="/dashboard" icon={<LayoutDashboard size={14} />}>
                         Dashboard
                       </DropdownLink>
                     )}
-                    {(role === "admin" || role === "master_admin") && (
+                    {isAdmin(role) && (
                       <DropdownLink href="/admin" icon={<Settings size={14} />}>
                         管理画面
                       </DropdownLink>
@@ -215,13 +209,13 @@ export default function HeaderNav({
                 </MobileLink>
               )}
 
-              {(role === "fellow" || role === "admin" || role === "master_admin") && (
+              {(isFellow(role) || isAdmin(role)) && (
                 <MobileLink href="/dashboard" icon={<LayoutDashboard size={18} />} onClick={close}>
                   Dashboard
                 </MobileLink>
               )}
 
-              {(role === "admin" || role === "master_admin") && (
+              {isAdmin(role) && (
                 <MobileLink href="/admin" icon={<Settings size={18} />} onClick={close}>
                   管理画面
                 </MobileLink>

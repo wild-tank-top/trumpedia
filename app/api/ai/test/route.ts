@@ -1,3 +1,4 @@
+import { isAdmin } from "@/lib/roles";
 import { NextResponse } from "next/server";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
@@ -12,7 +13,7 @@ const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
 
 export async function GET() {
   const session = await auth();
-  if (!session?.user || session.user.role !== "admin") {
+  if (!session?.user || !isAdmin(session.user.role)) {
     return NextResponse.json({ error: "admin only" }, { status: 403 });
   }
 

@@ -1,3 +1,4 @@
+import { isAdmin } from "@/lib/roles";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "質問が見つかりません" }, { status: 404 });
     }
 
-    if (question.userId !== session.user.id && session.user.role !== "admin") {
+    if (question.userId !== session.user.id && !isAdmin(session.user.role)) {
       return NextResponse.json({ error: "質問の投稿者のみ補足を投稿できます" }, { status: 403 });
     }
 
