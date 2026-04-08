@@ -1,8 +1,8 @@
 import { getTier, TIERS } from "@/lib/answerTier";
 import { Lock } from "lucide-react";
 
-// ランク名をデフォルト表示するインデックス上限（0〜4 = 悠久の琥珀・マデイラ まで）
-const ALWAYS_VISIBLE_UP_TO = 4;
+// ランク名をデフォルト表示するインデックス上限（0〜5 = 天上の翠黄・シャルトリューズ まで）
+const ALWAYS_VISIBLE_UP_TO = 5;
 
 export default function TierRoadmap({ totalAnswers }: { totalAnswers: number }) {
   const currentTier = getTier(totalAnswers);
@@ -25,30 +25,14 @@ export default function TierRoadmap({ totalAnswers }: { totalAnswers: number }) 
           const isDone    = i < currentTier.index;
           const isCurrent = i === currentTier.index;
           const isNext    = i === currentTier.index + 1;
-          const isLocked  = i > currentTier.index + 1;
+          const isFuture  = i > currentTier.index + 1;
 
-          // ランク名の表示可否：index 0-5 は常に表示、6以降は前ランク到達後のみ
+          // ランク名の表示可否：index 0〜ALWAYS_VISIBLE_UP_TO は常に表示、それ以降は前ランク到達後のみ
           const nameVisible = i <= ALWAYS_VISIBLE_UP_TO || currentTier.index >= i - 1;
 
-          /* ── 鍵ロック行 ── */
-          if (isLocked) {
-            return (
-              <li
-                key={tier.min}
-                className="flex items-center gap-3 px-3 py-2 rounded-xl opacity-25"
-              >
-                <span className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
-                  <Lock size={9} className="text-gray-400" />
-                </span>
-                <span className="flex-1 text-xs text-gray-400 tracking-widest">— — —</span>
-                <span className="text-[10px] text-gray-300 shrink-0">
-                  <Lock size={8} />
-                </span>
-              </li>
-            );
-          }
+          // 件数は「次のランク」のみ表示、それ以降は鍵マーク
+          const countVisible = !isFuture;
 
-          /* ── 通常行（完了 / 現在 / 次） ── */
           return (
             <li
               key={tier.min}
@@ -57,19 +41,21 @@ export default function TierRoadmap({ totalAnswers }: { totalAnswers: number }) 
                   ? `${tier.bg} ${tier.border} border shadow-sm`
                   : isDone
                   ? "opacity-60"
-                  : "opacity-80"   // isNext
+                  : isFuture
+                  ? "opacity-40"
+                  : "opacity-85"  // isNext
               }`}
             >
               {/* ステップ番号 / チェック */}
               <span className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold ${
                 isCurrent ? tier.badge :
                 isDone    ? "bg-gray-100 text-gray-400" :
-                            "bg-gray-100 text-gray-500"
+                            "bg-gray-100 text-gray-400"
               }`}>
                 {isDone ? "✓" : i + 1}
               </span>
 
-              {/* ランク名（表示ルールに従う） */}
+              {/* ランク名 */}
               <span className={`flex-1 text-xs font-medium truncate ${
                 isCurrent ? "text-gray-800" : "text-gray-500"
               }`}>
@@ -87,10 +73,16 @@ export default function TierRoadmap({ totalAnswers }: { totalAnswers: number }) 
                 </span>
               )}
 
-              {/* 件数 */}
-              <span className="text-[10px] text-gray-400 shrink-0 w-14 text-right">
-                {tier.min === 0 ? "0〜4件" : `${tier.min}件〜`}
-              </span>
+              {/* 件数 or 鍵マーク */}
+              {countVisible ? (
+                <span className="text-[10px] text-gray-400 shrink-0 w-14 text-right">
+                  {tier.min === 0 ? "0〜4件" : `${tier.min}件〜`}
+                </span>
+              ) : (
+                <span className="shrink-0 w-14 flex justify-end">
+                  <Lock size={10} className="text-gray-300" />
+                </span>
+              )}
             </li>
           );
         })}
