@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Session } from "next-auth";
+import { getTier, TIERS } from "@/lib/answerTier";
 
 type ExistingAnswer = {
   id: number;
@@ -109,33 +110,51 @@ export default function AnswerForm({
           </span>
         </div>
 
-        {!isEditing && milestoneCount !== null && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-center">
-            <p className="text-amber-800 font-semibold text-sm">
-              おめでとうございます！これで <span className="text-lg font-bold">{milestoneCount}</span> 件目の貢献です！
-            </p>
-            <div className="mt-2">
-              <div className="flex items-center justify-between text-xs text-amber-600 mb-1">
-                <span>AIクローン進捗</span>
-                <span>{milestoneCount} / 100</span>
+        {!isEditing && milestoneCount !== null && (() => {
+          const t        = getTier(milestoneCount);
+          const nextTier = TIERS[t.index + 1] ?? null;
+          const toNext   = nextTier ? nextTier.min - milestoneCount : 0;
+          const progress = nextTier
+            ? Math.min(Math.round(((milestoneCount - t.min) / (nextTier.min - t.min)) * 100), 100)
+            : 100;
+          return (
+            <div className={`border rounded-xl px-4 py-4 ${t.bg} ${t.border}`}>
+              {/* 件数 + 現在ティア */}
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-semibold text-gray-700">
+                  累計 <span className="text-2xl font-bold text-gray-900 mx-0.5">{milestoneCount}</span> 件
+                </p>
+                <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${t.badge}`}>
+                  {t.label}
+                </span>
               </div>
-              <div className="w-full bg-amber-100 rounded-full h-2">
+
+              {/* プログレスバー */}
+              <div className="w-full bg-white/70 rounded-full h-2.5 overflow-hidden">
                 <div
-                  className="bg-amber-500 h-2 rounded-full transition-all"
-                  style={{ width: `${Math.min(milestoneCount, 100)}%` }}
+                  className={`h-2.5 rounded-full transition-all duration-700 ${t.bar}`}
+                  style={{ width: `${progress}%` }}
                 />
               </div>
-              {milestoneCount >= 100 && (
-                <p className="text-xs text-amber-700 mt-1 font-medium">AI分身作成の準備が整いました！</p>
+
+              {/* 目盛り + 次ティア情報 */}
+              {nextTier ? (
+                <div className="flex items-center justify-between mt-1.5">
+                  <span className="text-[10px] text-gray-400">{t.min}件</span>
+                  <span className="text-xs text-gray-500">
+                    あと <span className="font-bold text-gray-700">{toNext}</span> 件で
+                    <span className={`inline-block ml-1 text-[11px] font-bold px-2 py-0.5 rounded-full ${nextTier.badge}`}>
+                      {nextTier.label}
+                    </span>
+                  </span>
+                  <span className="text-[10px] text-gray-400">{nextTier.min}件</span>
+                </div>
+              ) : (
+                <p className="text-xs text-center font-semibold text-amber-600 mt-1.5">✨ 最高ランク到達！</p>
               )}
             </div>
-            <p className="text-xs text-amber-700/80 mt-3 leading-relaxed">
-              100件の回答を達成すると、あなたの思考や演奏理論を学習した
-              <span className="font-semibold">「パーソナルAI分身」</span>
-              作成プロジェクトへ正式に申請が可能になります。
-            </p>
-          </div>
-        )}
+          );
+        })()}
 
         {isEditing ? (
           <p>

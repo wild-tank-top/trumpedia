@@ -13,6 +13,7 @@ import WeeklyFocusTag from "./WeeklyFocusTag";
 import AnswerTierCard from "./AnswerTierCard";
 import NotificationToast from "./NotificationToast";
 import TierPreviewSelector from "./TierPreviewSelector";
+import TierRoadmap from "./TierRoadmap";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
@@ -161,8 +162,6 @@ export default async function DashboardPage() {
     .sort((a, b) => b.score - a.score)[0] ?? null;
 
   const totalViews    = answeredQuestions.reduce((s, q) => s + q.views, 0);
-  const cloneProgress = Math.min(totalAnswers, 100);
-
   // 日付シリアライズ
   const serializedCodes = inviteCodes.map((c) => ({
     ...c,
@@ -214,51 +213,8 @@ export default async function DashboardPage() {
           href="/?sort=createdAt&order=desc" hrefLabel="質問を見る" />
       </div>
 
-      {/* AIクローン進捗 */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-5">
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-base font-semibold text-gray-800">AIクローン進捗</h2>
-            <p className="text-xs text-gray-500 mt-0.5">
-              100件の回答であなたのAIクローンbot作成プロジェクトにご招待します
-            </p>
-          </div>
-          <span className="text-2xl font-bold text-amber-600 shrink-0 ml-4">
-            {cloneProgress}
-            <span className="text-sm font-normal text-gray-400"> / 100</span>
-          </span>
-        </div>
-        <div>
-          <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-            <div
-              className="bg-gradient-to-r from-amber-400 to-amber-600 h-3 rounded-full transition-all duration-500"
-              style={{ width: `${cloneProgress}%` }}
-            />
-          </div>
-          <div className="mt-2 flex items-center justify-between text-xs text-gray-400">
-            <span>0件</span><span>100件</span>
-          </div>
-        </div>
-        {totalAnswers >= 100 ? (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-center">
-            <p className="text-amber-800 font-semibold text-sm">
-              🎉 招待条件を達成しました！管理者までご連絡ください。
-            </p>
-          </div>
-        ) : (
-          <p className="text-xs text-gray-500 text-center">
-            あと <span className="font-semibold text-amber-600">{100 - totalAnswers}</span> 件でプロジェクトへのご招待が解放されます
-          </p>
-        )}
-        <div className="border-t border-gray-100 pt-4 space-y-2">
-          <p className="text-xs font-semibold text-gray-600">AIクローンbotとは？</p>
-          <p className="text-xs text-gray-500 leading-relaxed">
-            あなたがトランペディアに積み重ねた回答・思考・演奏理論をもとに、
-            <span className="font-medium text-gray-700">あなた自身の知識を再現するAIボット</span>を
-            一緒に作るプロジェクトです。
-          </p>
-        </div>
-      </div>
+      {/* Tier Roadmap */}
+      <TierRoadmap totalAnswers={tierPreviewCount ?? totalAnswers} />
 
       {/* 未回答CTA */}
       {unansweredCount > 0 && (
