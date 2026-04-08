@@ -217,6 +217,66 @@ export default async function DashboardPage() {
       {/* Tier Roadmap */}
       <TierRoadmap totalAnswers={tierPreviewCount ?? totalAnswers} />
 
+      {/* AI クローンプロジェクト ティーザー */}
+      {(() => {
+        const count   = tierPreviewCount ?? totalAnswers;
+        const reached = count >= 100;
+        const remaining = Math.max(0, 100 - count);
+        return (
+          <div className={`rounded-2xl border px-5 py-4 flex items-start gap-4 transition-all ${
+            reached
+              ? "border-yellow-400 bg-gradient-to-br from-yellow-50 via-amber-50 to-yellow-100 shadow-md shadow-yellow-200"
+              : "border-gray-200 bg-gray-50/60"
+          }`}>
+            {/* アイコン */}
+            <div className={`shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center mt-0.5 ${
+              reached
+                ? "bg-amber-100 border-amber-300"
+                : "bg-gray-100 border-gray-200"
+            }`}>
+              <svg className={`w-5 h-5 ${reached ? "text-amber-600" : "text-gray-400"}`} fill="none" stroke="currentColor" strokeWidth={1.6} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15M14.25 3.104c.251.023.501.05.75.082M19.8 15l-1.575 1.57a1.5 1.5 0 01-2.122 0l-2.122-2.12a1.5 1.5 0 00-2.122 0l-2.12 2.12a1.5 1.5 0 01-2.123 0L6.2 15m13.6 0l1.5 1.5a1.5 1.5 0 010 2.12l-1.5 1.5" />
+              </svg>
+            </div>
+
+            {/* テキスト */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <p className={`text-sm font-bold ${reached ? "text-amber-900" : "text-gray-500"}`}>
+                  AI クローンプロジェクト
+                </p>
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border tracking-wide ${
+                  reached
+                    ? "bg-amber-200 text-amber-800 border-amber-300"
+                    : "bg-gray-100 text-gray-400 border-gray-200"
+                }`}>
+                  構想中
+                </span>
+                {reached && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-700 border border-teal-200">
+                    参加資格あり
+                  </span>
+                )}
+              </div>
+
+              {reached ? (
+                <p className="text-xs text-amber-900 leading-relaxed">
+                  あなたの蓄積された思考・演奏哲学を学習し、24時間365日あなたに代わって悩みを受け止める
+                  <span className="font-semibold">「パーソナル AI 分身」</span>
+                  作成プロジェクトへの参加資格を獲得しました。詳細は管理者までお問い合わせください。
+                </p>
+              ) : (
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  100件の回答を達成した Fellows のみ参加できる特別プロジェクト。
+                  蓄積した思考・演奏哲学を学習した AI 分身を一緒に作ります。
+                  <span className="font-medium text-gray-600 ml-1">あと {remaining} 件で解放。</span>
+                </p>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* 未回答CTA */}
       {unansweredCount > 0 && (
         <div className="bg-teal-50 border border-teal-200 rounded-2xl p-5 flex items-center justify-between gap-4">
