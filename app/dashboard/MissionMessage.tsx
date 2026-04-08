@@ -84,8 +84,8 @@ export default function MissionMessage() {
       </div>
 
       {/* ── フッター ────────────────────────────────── */}
-      <div className="px-6 py-5">
-        <p className="text-xs text-gray-500 leading-relaxed">
+      <div className="px-6 py-5 border-t border-yellow-900/30 bg-gradient-to-r from-yellow-950/30 to-amber-950/20">
+        <p className="text-sm font-medium leading-relaxed bg-gradient-to-r from-yellow-300 via-amber-200 to-yellow-400 bg-clip-text text-transparent">
           あなたの一言が、どこかの誰かを救い、喜びやひらめきを与えることを、私たちは心から信じています。
         </p>
       </div>

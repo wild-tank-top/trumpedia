@@ -1,4 +1,5 @@
 import { getTier, TIERS } from "@/lib/answerTier";
+import { Cpu, Lock } from "lucide-react";
 
 export default function TierRoadmap({ totalAnswers }: { totalAnswers: number }) {
   const currentTier = getTier(totalAnswers);
@@ -63,6 +64,41 @@ export default function TierRoadmap({ totalAnswers }: { totalAnswers: number }) 
           );
         })}
       </ol>
+
+      {/* ── Noble Rot Gold 達成 → AIクローンティーザー ── */}
+      {totalAnswers >= 100 ? (
+        <div className="mt-3 rounded-xl border border-yellow-400 bg-gradient-to-br from-yellow-50 via-amber-50 to-yellow-100 px-4 py-4 shadow-md shadow-yellow-200">
+          <div className="flex items-center gap-2 mb-2">
+            <Cpu size={15} className="text-amber-600 shrink-0" />
+            <span className="text-xs font-bold text-amber-800 tracking-wide">
+              AI クローンプロジェクト — 解放
+            </span>
+            <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-200 text-amber-800 border border-amber-300">
+              構想中
+            </span>
+          </div>
+          <p className="text-xs text-amber-900 leading-relaxed">
+            あなたの蓄積された思考・演奏哲学を学習し、24時間365日あなたに代わって悩みを受け止める
+            <span className="font-semibold">「パーソナル AI 分身」</span>
+            作成プロジェクトへの参加資格を獲得しました。詳細は管理者までお問い合わせください。
+          </p>
+        </div>
+      ) : (
+        <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50/60 px-4 py-3 flex items-center gap-3 opacity-50">
+          <Lock size={13} className="text-gray-400 shrink-0" />
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold text-gray-500">
+              AI クローンプロジェクト
+            </p>
+            <p className="text-[10px] text-gray-400 mt-0.5">
+              Noble Rot Gold（100件）到達で解放
+            </p>
+          </div>
+          <span className="ml-auto text-[10px] font-medium text-gray-400 shrink-0">
+            あと {Math.max(0, 100 - totalAnswers)} 件
+          </span>
+        </div>
+      )}
 
       {/* ── 次ティアへのプログレスバー ── */}
       <div className="mt-5 pt-4 border-t border-gray-100">
