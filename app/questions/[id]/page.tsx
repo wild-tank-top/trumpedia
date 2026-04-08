@@ -149,10 +149,10 @@ export default async function QuestionDetailPage({
   return (
     <div>
       {/* パンくず */}
-      <div className="text-sm text-gray-400 mb-4 flex items-center justify-between">
-        <div>
-          <Link href="/" className="hover:text-teal-600">一覧</Link>
-          <span className="mx-2">/</span>
+      <div className="text-sm text-gray-400 mb-4 flex items-center justify-between gap-2">
+        <div className="min-w-0 overflow-hidden flex items-center">
+          <Link href="/" className="hover:text-teal-600 shrink-0">一覧</Link>
+          <span className="mx-2 shrink-0">/</span>
           <span className="text-gray-600 truncate">{question.title}</span>
         </div>
         {canEdit && (
@@ -210,7 +210,7 @@ export default async function QuestionDetailPage({
         <h1 className={`text-xl font-bold mb-4 ${ls.detailTitle}`}>{question.title}</h1>
 
         <div className="text-sm">
-          <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{question.content}</p>
+          <p className="text-gray-700 whitespace-pre-wrap break-words leading-relaxed">{question.content}</p>
         </div>
 
         <div className="flex items-center justify-between mt-4">
@@ -238,7 +238,7 @@ export default async function QuestionDetailPage({
                   {new Date(s.createdAt).toLocaleDateString("ja-JP", { year: "numeric", month: "short", day: "numeric" })}
                 </span>
               </div>
-              <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{s.content}</p>
+              <p className="text-sm text-gray-700 whitespace-pre-wrap break-words leading-relaxed">{s.content}</p>
             </div>
           ))}
         </div>
@@ -281,12 +281,12 @@ export default async function QuestionDetailPage({
           {question.answers.map((answer: AnswerWithMeta) => (
             <div key={answer.id} className="bg-white rounded-xl border border-gray-200 p-5">
               <div className="flex items-center justify-between gap-2 mb-4">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 min-w-0">
                   <Avatar src={answer.user.image} name={answer.user.name} size="sm" />
-                  <div>
+                  <div className="min-w-0">
                     <Link
                       href={`/contributors/${answer.user.id}`}
-                      className="font-medium text-sm text-gray-900 hover:text-teal-600"
+                      className="font-medium text-sm text-gray-900 hover:text-teal-600 truncate block"
                     >
                       {answer.user.name ?? "名無し"}
                     </Link>
@@ -386,7 +386,7 @@ function AnswerSection({ label, children, highlight }: { label: string; children
   return (
     <div className={highlight ? "bg-teal-50 border border-teal-100 rounded-lg p-3" : ""}>
       <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">{label}</p>
-      <p className={`whitespace-pre-wrap leading-relaxed ${highlight ? "text-teal-900 font-medium" : "text-gray-700"}`}>{children}</p>
+      <p className={`whitespace-pre-wrap break-words leading-relaxed ${highlight ? "text-teal-900 font-medium" : "text-gray-700"}`}>{children}</p>
     </div>
   );
 }
