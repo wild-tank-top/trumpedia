@@ -8,6 +8,7 @@ import { getTier } from "@/lib/answerTier";
 import TierCornerOrnament from "@/app/components/TierCornerOrnament";
 import { isAdmin as isAdminRole, isFellow as isFellowRole, isMasterAdmin as isMasterAdminRole, ROLE_LABELS } from "@/lib/roles";
 import DeleteAccountButton from "./edit/DeleteAccountButton";
+import GuestDashboard from "@/app/dashboard/GuestDashboard";
 
 export default async function ContributorPage({
   params,
@@ -66,6 +67,20 @@ export default async function ContributorPage({
     isOwnProfile || isAdmin
       ? user.answers
       : user.answers.filter((a) => a.question.status === "approved");
+
+  // ゲスト自身のプロフィール：Fellow 申請状況を取得
+  const guestApplication = isOwnGuestProfile
+    ? await prisma.fellowApplication
+        .findUnique({
+          where: { applicantId: id },
+          select: { id: true, status: true, createdAt: true, referrer: { select: { name: true } } },
+        })
+        .catch(() => null)
+    : null;
+  const serializedApplication =
+    guestApplication && guestApplication.status !== "admin_completed"
+      ? { ...guestApplication, createdAt: guestApplication.createdAt.toISOString() }
+      : null;
 
   return (
     <div>
@@ -160,14 +175,38 @@ export default async function ContributorPage({
         </div>
       </div>
 
-      {/* ゲスト自身のプロフィール：退会ボタンのみ */}
+      {/* ゲスト自身のプロフィール */}
       {isOwnGuestProfile && (
-        <div className="mt-4 border-t border-gray-200 pt-5">
-          <p className="text-sm font-medium text-gray-700 mb-1">アカウント設定</p>
-          <p className="text-xs text-gray-400 mb-3">
-            アカウントを削除すると、投稿した質問はサイトに残ります。
-          </p>
-          <DeleteAccountButton />
+        <div className="space-y-5">
+          {/* できること・Fellowsの特典 */}
+          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 text-sm text-gray-500 space-y-1">
+            <p className="font-medium text-gray-700">ゲストでできること</p>
+            <ul className="list-disc list-inside space-y-0.5 text-xs">
+              <li>質問の投稿・閲覧</li>
+              <li>自分の質問の管理</li>
+            </ul>
+            <p className="font-medium text-gray-700 pt-2">Fellows になるとできること</p>
+            <ul className="list-disc list-inside space-y-0.5 text-xs">
+              <li>質問への回答・いいね</li>
+              <li>AIクローン進捗の追跡</li>
+              <li>他のユーザーへの招待コードの発行</li>
+            </ul>
+          </div>
+
+          {/* Fellow 申請フォーム / 申請状況 */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-5">
+            <p className="text-sm font-medium text-gray-700 mb-3">Fellows 招待コード</p>
+            <GuestDashboard application={serializedApplication} />
+          </div>
+
+          {/* 退会 */}
+          <div className="border-t border-gray-200 pt-5">
+            <p className="text-sm font-medium text-gray-700 mb-1">アカウント設定</p>
+            <p className="text-xs text-gray-400 mb-3">
+              アカウントを削除すると、投稿した質問はサイトに残ります。
+            </p>
+            <DeleteAccountButton />
+          </div>
         </div>
       )}
 

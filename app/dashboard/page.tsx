@@ -7,7 +7,6 @@ import Link from "next/link";
 import InviteCodeManager from "./InviteCodeManager";
 import MissionMessage from "./MissionMessage";
 import PendingReferrals from "./PendingReferrals";
-import GuestDashboard from "./GuestDashboard";
 import ResonanceGraph from "./ResonanceGraph";
 import WeeklyFocusTag from "./WeeklyFocusTag";
 import AnswerTierCard from "./AnswerTierCard";
@@ -34,50 +33,9 @@ export default async function DashboardPage() {
     ? parseInt(tierPreviewRaw, 10)
     : null;
 
-  // ── ゲスト: 申請状況のみ表示 ──────────────────────────────────
+  // ── ゲスト: プロフィールページへリダイレクト ──────────────────
   if (role === "guest") {
-    const application = await prisma.fellowApplication
-      .findUnique({
-        where: { applicantId: userId },
-        select: {
-          id: true, status: true, createdAt: true,
-          referrer: { select: { name: true } },
-        },
-      })
-      .catch(() => null);
-
-    // admin_completed のまま guest に戻されたユーザーは再申請できるよう null 扱い
-    const serialized =
-      application && application.status !== "admin_completed"
-        ? { ...application, createdAt: application.createdAt.toISOString() }
-        : null;
-
-    return (
-      <div className="space-y-6 max-w-xl mx-auto">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">マイページ</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            {session.user.name ?? "ゲスト"} さん
-          </p>
-        </div>
-        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 text-sm text-gray-500 space-y-1">
-          <p className="font-medium text-gray-700">ゲストでできること</p>
-          <ul className="list-disc list-inside space-y-0.5 text-xs">
-            <li>質問の投稿・閲覧</li>
-            <li>自分の質問の管理</li>
-          </ul>
-          <p className="font-medium text-gray-700 pt-2">Fellows になるとできること</p>
-          <ul className="list-disc list-inside space-y-0.5 text-xs">
-            <li>質問への回答・いいね</li>
-            <li>AIクローン進捗の追跡</li>
-            <li>他のユーザーへの招待コードの発行</li>
-          </ul>
-        </div>
-        <div className="border-t border-gray-100 pt-4">
-          <GuestDashboard application={serialized} />
-        </div>
-      </div>
-    );
+    redirect(`/contributors/${userId}`);
   }
 
   // ── Fellow / Admin: フルダッシュボード ──────────────────────────
