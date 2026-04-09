@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import CategoryFilter from "./CategoryFilter";
@@ -11,8 +12,25 @@ import ThumbnailImage from "./components/ThumbnailImage";
 import { isManagedThumbnail, getAutoThumbnail } from "@/lib/thumbnails";
 import type { Prisma } from "@prisma/client";
 import { expandSearchTerms } from "@/lib/searchUtils";
+import { SITE_URL } from "@/lib/siteUrl";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "質問一覧｜トランペット上達のQ&A",
+  description:
+    "トランペットの練習・奏法・道具・メンタルについてプロ奏者が本音で回答。高音域・音色・ブレス・リップスラーなどジャンルを問わず専門家に聞けます。",
+  alternates: { canonical: SITE_URL },
+  openGraph: {
+    title: "質問一覧｜トランペット上達のQ&A | Trumpedia",
+    description:
+      "トランペットの練習・奏法・道具・メンタルについてプロ奏者が本音で回答。",
+    url: SITE_URL,
+    type: "website",
+    locale: "ja_JP",
+    siteName: "Trumpedia",
+  },
+};
 
 const ITEMS_PER_PAGE = 12;
 

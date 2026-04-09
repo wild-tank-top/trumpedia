@@ -10,54 +10,77 @@ import Link from "next/link";
 import Image from "next/image";
 import { isAdmin } from "@/lib/roles";
 import { getTier } from "@/lib/answerTier";
+import { SITE_URL } from "@/lib/siteUrl";
 
 const notoSansJP = Noto_Sans_JP({
   weight: ["400", "500", "700", "900"],
   subsets: ["latin"],
   display: "swap",
   variable: "--font-noto-sans-jp",
-  preload: false, // 日本語フォントは全グリフのプリロードを省略
+  preload: false,
 });
 
-
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
-
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(SITE_URL),
   verification: {
     google: "pjKOY2v7UC2VTAeCzBod0Lk2p9rDUAHMgsjalQoGszM",
   },
   title: {
-    default: "Trumpedia",
+    default: "Trumpedia｜トランペット奏者のQ&Aプラットフォーム",
     template: "%s | Trumpedia",
   },
   description:
-    "トランペット奏者の知見・思考プロセス・価値観を蓄積するQ&Aプラットフォーム。Fellowによる本格的な回答でトランペット上達を加速しましょう。",
+    "Trumpedia（トランペディア）は、プロトランペット奏者の知見・思考プロセス・価値観を蓄積するQ&Aプラットフォームです。Fellow奏者による本格的な回答でトランペット上達を加速しましょう。",
+  keywords: [
+    "Trumpedia", "トランペディア", "トランペット", "Q&A", "トランペット奏者",
+    "トランペット上達", "トランペット練習", "金管楽器", "吹奏楽", "オーケストラ",
+  ],
+  alternates: {
+    canonical: SITE_URL,
+  },
   openGraph: {
     siteName: "Trumpedia",
-    title: "Trumpedia",
+    title: "Trumpedia｜トランペット奏者のQ&Aプラットフォーム",
     description:
-      "トランペット奏者の知見・思考プロセス・価値観を蓄積するQ&Aプラットフォーム",
-    url: siteUrl,
+      "プロトランペット奏者の知見・思考プロセス・価値観を蓄積するQ&Aプラットフォーム。Fellow奏者による本格的な回答でトランペット上達を加速。",
+    url: SITE_URL,
     type: "website",
     locale: "ja_JP",
     images: [
       {
-        url: "/images/default-thumbnails/beginner.svg",
+        url: `${SITE_URL}/images/og-default.png`,
         width: 1200,
         height: 630,
-        alt: "Trumpedia - トランペット奏者の知見プラットフォーム",
+        alt: "Trumpedia - トランペット奏者のQ&Aプラットフォーム",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Trumpedia",
+    title: "Trumpedia｜トランペット奏者のQ&Aプラットフォーム",
     description:
-      "トランペット奏者の知見・思考プロセス・価値観を蓄積するQ&Aプラットフォーム",
-    images: ["/images/default-thumbnails/beginner.svg"],
+      "プロトランペット奏者の知見・思考プロセス・価値観を蓄積するQ&Aプラットフォーム。",
+    images: [`${SITE_URL}/images/og-default.png`],
+  },
+};
+
+// JSON-LD: WebSite + SearchAction（サイトリンク検索ボックス）
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Trumpedia",
+  alternateName: "トランペディア",
+  url: SITE_URL,
+  description:
+    "プロトランペット奏者の知見・思考プロセス・価値観を蓄積するQ&Aプラットフォーム",
+  inLanguage: "ja",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: {
+      "@type": "EntryPoint",
+      urlTemplate: `${SITE_URL}/?q={search_term_string}`,
+    },
+    "query-input": "required name=search_term_string",
   },
 };
 
@@ -68,7 +91,6 @@ export default async function RootLayout({
 }) {
   const session = await auth();
 
-  // 未読通知を取得（Notificationテーブル未作成時は空配列で続行）
   const notifications = session?.user.id
     ? await prisma.notification
         .findMany({
@@ -86,14 +108,12 @@ export default async function RootLayout({
 
   const unreadCount = notifications.length;
 
-  // アバターのティアリング
   const answerCount = session?.user.id
     ? await prisma.answer.count({ where: { userId: session.user.id } }).catch(() => 0)
     : 0;
   const tier = getTier(answerCount);
   const tierRingClass = tier.ring;
 
-  // 管理者向け: 最終承認待ちの Fellows 候補数
   const adminPendingCount =
     isAdmin(session?.user.role)
       ? await prisma.fellowApplication
@@ -103,6 +123,12 @@ export default async function RootLayout({
 
   return (
     <html lang="ja" className={notoSansJP.variable}>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+        />
+      </head>
       <body className="bg-gray-50 text-gray-800 min-h-screen">
         <header className="bg-white border-b border-gray-200 sticky top-0 z-50 relative">
           <div className="max-w-3xl mx-auto px-4 py-2 flex items-center justify-between">
@@ -121,7 +147,6 @@ export default async function RootLayout({
           </div>
         </header>
 
-        {/* 管理者バナー：最終承認待ち Fellows 候補がいる場合 */}
         {adminPendingCount > 0 && (
           <div className="bg-blue-600 text-white text-sm px-4 py-2.5 flex items-center justify-center gap-3">
             <span>
@@ -138,7 +163,6 @@ export default async function RootLayout({
           </div>
         )}
 
-        {/* 通知バナー：全ページ共通、ヘッダー直下 */}
         <NotificationBanner notifications={notifications} />
 
         <main className="max-w-3xl mx-auto px-4 py-6">

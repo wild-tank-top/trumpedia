@@ -3,9 +3,21 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { cookies } from "next/headers";
 import FellowFilter from "./FellowFilter";
+import { SITE_URL } from "@/lib/siteUrl";
 
 export const metadata: Metadata = {
-  title: "Fellows | Trumpedia",
+  title: "Fellows（回答者一覧）",
+  description:
+    "Trumpediaに在籍するプロトランペット奏者・Fellows の一覧。演奏歴・経歴・専門分野を確認して、あなたの悩みに最適な奏者を探せます。",
+  alternates: { canonical: `${SITE_URL}/fellows` },
+  openGraph: {
+    title: "Fellows（回答者一覧） | Trumpedia",
+    description: "Trumpediaに在籍するプロトランペット奏者・Fellows の一覧。",
+    url: `${SITE_URL}/fellows`,
+    type: "website",
+    locale: "ja_JP",
+    siteName: "Trumpedia",
+  },
 };
 
 export const dynamic = "force-dynamic"; // Tier preview requires per-request cookie

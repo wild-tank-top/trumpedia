@@ -9,6 +9,41 @@ import TierCornerOrnament from "@/app/components/TierCornerOrnament";
 import { isAdmin as isAdminRole, isFellow as isFellowRole, isMasterAdmin as isMasterAdminRole, ROLE_LABELS } from "@/lib/roles";
 import DeleteAccountButton from "./edit/DeleteAccountButton";
 import GuestDashboard from "@/app/dashboard/GuestDashboard";
+import { SITE_URL } from "@/lib/siteUrl";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: { name: true, profile: true },
+  });
+  if (!user) return { title: "プロフィール" };
+
+  const name = user.name ?? "Fellow";
+  const description = user.profile?.bio
+    ? user.profile.bio.slice(0, 150)
+    : `${name}のトランペット演奏哲学・回答をTrumpediaで確認できます。`;
+  const canonicalUrl = `${SITE_URL}/contributors/${id}`;
+
+  return {
+    title: `${name} のプロフィール`,
+    description,
+    alternates: { canonical: canonicalUrl },
+    openGraph: {
+      title: `${name} | Trumpedia Fellow`,
+      description,
+      url: canonicalUrl,
+      type: "profile",
+      locale: "ja_JP",
+      siteName: "Trumpedia",
+    },
+  };
+}
 
 export default async function ContributorPage({
   params,
@@ -82,8 +117,29 @@ export default async function ContributorPage({
       ? { ...guestApplication, createdAt: guestApplication.createdAt.toISOString() }
       : null;
 
+  // JSON-LD: Fellow は Person スキーマ、guest は省略
+  const isFellowOrAdmin = isFellowRole(user.role) || isAdminRole(user.role);
+  const personJsonLd = isFellowOrAdmin
+    ? {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        name: user.name ?? "Trumpedia Fellow",
+        url: `${SITE_URL}/contributors/${id}`,
+        description: user.profile?.bio ?? undefined,
+        ...(user.profile?.twitter && {
+          sameAs: [`https://twitter.com/${user.profile.twitter.replace(/^@/, "")}`],
+        }),
+      }
+    : null;
+
   return (
     <div>
+      {personJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+        />
+      )}
       {/* プロフィールヘッダー */}
       <div className={`p-6 mb-6 transition-all ${tier.shape} ${tier.bg} ${tier.border} ${tier.glow}`}>
         <TierCornerOrnament level={tier.ornamentLevel} colorClass={tier.ornamentColor} size={42} />

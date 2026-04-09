@@ -18,6 +18,7 @@ import ThumbnailImage from "@/app/components/ThumbnailImage";
 import { isManagedThumbnail, getAutoThumbnail } from "@/lib/thumbnails";
 import { getRelatedQuestions } from "@/lib/relatedQuestions";
 import { isAdmin as isAdminRole, isFellow as isFellowRole } from "@/lib/roles";
+import { SITE_URL } from "@/lib/siteUrl";
 
 type AnswerWithMeta = Answer & {
   user: { name: string | null; id: string; image: string | null };
@@ -42,13 +43,18 @@ export async function generateMetadata({
     : getAutoThumbnail(Number(id));
   const ogImage = `/api/og?title=${encodeURIComponent(question.title)}&level=${question.level}&thumbnail=${encodeURIComponent(effectiveThumbnail)}`;
 
+  const canonicalUrl = `${SITE_URL}/questions/${id}`;
   return {
     title: question.title,
     description,
+    alternates: { canonical: canonicalUrl },
     openGraph: {
       title: question.title,
       description,
+      url: canonicalUrl,
       type: "article",
+      locale: "ja_JP",
+      siteName: "Trumpedia",
       images: [{ url: ogImage, width: 1200, height: 630 }],
     },
     twitter: {
@@ -146,8 +152,37 @@ export default async function QuestionDetailPage({
     4
   );
 
+  // JSON-LD: QAPage（Q&A 構造化データ）
+  const qaJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "QAPage",
+    mainEntity: {
+      "@type": "Question",
+      name: question.title,
+      text: question.content,
+      datePublished: question.createdAt,
+      answerCount: question.answers.length,
+      ...(question.answers.length > 0 && {
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: question.answers[0].summary,
+          datePublished: question.answers[0].createdAt,
+          author: {
+            "@type": "Person",
+            name: question.answers[0].user.name ?? "Trumpedia Fellow",
+            url: `${SITE_URL}/contributors/${question.answers[0].user.id}`,
+          },
+        },
+      }),
+    },
+  };
+
   return (
     <div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(qaJsonLd) }}
+      />
       {/* パンくず */}
       <div className="text-sm text-gray-400 mb-4 flex items-center justify-between gap-2">
         <div className="min-w-0 overflow-hidden flex items-center">
