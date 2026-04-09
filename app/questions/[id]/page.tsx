@@ -235,9 +235,11 @@ export default async function QuestionDetailPage({
           className="rounded-lg mb-4"
         />
         <div className="flex flex-wrap gap-2 mb-3">
-          <span className="text-xs bg-white/70 text-gray-600 border border-gray-200 px-2 py-0.5 rounded-full">
-            {question.category}
+          {question.category.split(",").map((cat) => (
+          <span key={cat} className="text-xs bg-white/70 text-gray-600 border border-gray-200 px-2 py-0.5 rounded-full">
+            {cat.trim()}
           </span>
+          ))}
           <span className={`text-xs px-2 py-0.5 rounded-full ${ls.badge}`}>
             {LEVEL_LABELS[question.level] ?? question.level}
           </span>

@@ -93,7 +93,7 @@ export default async function HomePage({
   // ── Prisma where 条件（検索 + カテゴリ + 承認済み） ──────────────
   const where: Prisma.QuestionWhereInput = {
     status: "approved",
-    ...(category ? { category } : {}),
+    ...(category ? { category: { contains: category } } : {}),
     ...(searchQuery ? buildSearchWhere(searchQuery) : {}),
   };
 

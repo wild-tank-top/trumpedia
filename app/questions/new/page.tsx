@@ -3,14 +3,14 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { CATEGORIES } from "@/lib/constants";
 import { useEffect } from "react";
 import { Sparkles, ImageIcon, ChevronDown } from "lucide-react";
 import ThumbnailPicker from "@/app/components/ThumbnailPicker";
+import CategoryChipSelector from "@/app/components/CategoryChipSelector";
 
 type FormData = {
   title: string;
-  category: string;
+  category: string; // カンマ区切り
   level: string;
   content: string;
   thumbnail: string;
@@ -27,11 +27,10 @@ export default function NewQuestionPage() {
   const { status } = useSession();
   const formRef  = useRef<HTMLFormElement>(null);
 
-  // ── フォーム状態（title/content は AI で書き換えるため controlled） ──
-  const [title,   setTitle]   = useState("");
-  const [content, setContent] = useState("");
+  const [title,      setTitle]      = useState("");
+  const [content,    setContent]    = useState("");
+  const [categories, setCategories] = useState<string[]>([]);
 
-  // ── 投稿フロー ────────────────────────────────────────
   const [loading,     setLoading]     = useState(false);
   const [error,       setError]       = useState("");
   const [showModal,   setShowModal]   = useState(false);
@@ -39,12 +38,11 @@ export default function NewQuestionPage() {
   const [thumbnail,   setThumbnail]   = useState("");
   const [showPicker,  setShowPicker]  = useState(false);
 
-  // ── AI 言語化サポーター ───────────────────────────────
-  const [aiLoading,    setAiLoading]    = useState(false);
-  const [aiError,      setAiError]      = useState("");
-  const [wasPolished,  setWasPolished]  = useState(false);
-  const [prevTitle,    setPrevTitle]    = useState("");
-  const [prevContent,  setPrevContent]  = useState("");
+  const [aiLoading,   setAiLoading]   = useState(false);
+  const [aiError,     setAiError]     = useState("");
+  const [wasPolished, setWasPolished] = useState(false);
+  const [prevTitle,   setPrevTitle]   = useState("");
+  const [prevContent, setPrevContent] = useState("");
 
   useEffect(() => {
     if (status === "unauthenticated") router.replace("/login");
@@ -52,37 +50,31 @@ export default function NewQuestionPage() {
 
   if (status === "loading" || status === "unauthenticated") return null;
 
-  // ── AI リライト ───────────────────────────────────────
   async function handlePolish() {
     setAiLoading(true);
     setAiError("");
-
-    // select は uncontrolled のままなので formRef から読む
-    const form     = formRef.current!;
-    const category = (form.elements.namedItem("category") as HTMLSelectElement).value;
-    const level    = (form.elements.namedItem("level")    as HTMLSelectElement).value;
+    const form  = formRef.current!;
+    const level = (form.elements.namedItem("level") as HTMLSelectElement).value;
 
     try {
       const res = await fetch("/api/ai/polish-question", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ title, content, category, level }),
+        body:    JSON.stringify({ title, content, category: categories[0] ?? "", level }),
       });
-      const json = await res.json().catch(() => ({})) as { title?: string; content?: string; error?: string; detail?: string };
-      if (!res.ok) console.error("[polish-question] API error", res.status, json);
-
+      const json = await res.json().catch(() => ({})) as { title?: string; content?: string; error?: string };
       if (res.ok && json.title && json.content) {
-        // 元の値を保存してから上書き
         setPrevTitle(title);
         setPrevContent(content);
         setTitle(json.title);
         setContent(json.content);
         setWasPolished(true);
       } else {
-        const errMsg = res.status === 503
-          ? "AI機能は現在メンテナンス中です。しばらくしてからお試しください。"
-          : ((json as { error?: string }).error ?? "AI処理に失敗しました");
-        setAiError(errMsg);
+        setAiError(
+          res.status === 503
+            ? "AI機能は現在メンテナンス中です。"
+            : (json.error ?? "AI処理に失敗しました"),
+        );
       }
     } catch {
       setAiError("通信エラーが発生しました");
@@ -98,30 +90,26 @@ export default function NewQuestionPage() {
     setAiError("");
   }
 
-  // ── 確認モーダルを開く ────────────────────────────────
   function handlePrepare(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const form     = e.currentTarget;
-    const category = (form.elements.namedItem("category") as HTMLSelectElement).value;
-    const level    = (form.elements.namedItem("level")    as HTMLSelectElement).value;
-    setPendingData({ title, content, category, level, thumbnail });
+    if (categories.length === 0) return;
+    const form  = e.currentTarget;
+    const level = (form.elements.namedItem("level") as HTMLSelectElement).value;
+    setPendingData({ title, content, category: categories.join(","), level, thumbnail });
     setError("");
     setShowModal(true);
   }
 
-  // ── 投稿実行 ──────────────────────────────────────────
   async function doSubmit() {
     if (!pendingData) return;
     setLoading(true);
     setError("");
-
     try {
       const res = await fetch("/api/questions", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify(pendingData),
       });
-
       if (res.ok) {
         const question = await res.json() as { id: number };
         router.push(`/questions/${question.id}`);
@@ -144,7 +132,7 @@ export default function NewQuestionPage() {
       </p>
 
       <form ref={formRef} onSubmit={handlePrepare} className="space-y-6">
-        {/* タイトル（controlled） */}
+        {/* タイトル */}
         <Field label="タイトル" required hint="質問文そのものを書いてください（10文字以上推奨）">
           <input
             name="title"
@@ -158,31 +146,24 @@ export default function NewQuestionPage() {
           />
         </Field>
 
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="カテゴリ" required>
-            <select
-              name="category"
-              required
-              className="w-full border border-gray-300 rounded-lg p-3 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-400"
-            >
-              <option value="">選択してください</option>
-              {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </Field>
+        {/* カテゴリ（複数選択） */}
+        <Field label="カテゴリ" required hint="最大3つまで選択できます">
+          <CategoryChipSelector selected={categories} onChange={setCategories} />
+        </Field>
 
-          <Field label="レベル" required>
-            <select
-              name="level"
-              required
-              className="w-full border border-gray-300 rounded-lg p-3 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-400"
-            >
-              <option value="">選択してください</option>
-              {LEVELS.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
-            </select>
-          </Field>
-        </div>
+        {/* レベル */}
+        <Field label="レベル" required>
+          <select
+            name="level"
+            required
+            className="w-full border border-gray-300 rounded-lg p-3 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-400"
+          >
+            <option value="">選択してください</option>
+            {LEVELS.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
+          </select>
+        </Field>
 
-        {/* 詳細（controlled） */}
+        {/* 詳細 */}
         <Field label="詳細・補足" required hint="質問の意図や背景、補足情報を書いてください">
           <textarea
             name="content"
@@ -195,7 +176,7 @@ export default function NewQuestionPage() {
           />
         </Field>
 
-        {/* ── アイキャッチ画像 ─────────────────────────── */}
+        {/* アイキャッチ画像 */}
         <div className="border border-gray-200 rounded-xl overflow-hidden">
           <button
             type="button"
@@ -218,16 +199,12 @@ export default function NewQuestionPage() {
           </button>
           {showPicker && (
             <div className="p-4">
-              <ThumbnailPicker
-                value={thumbnail}
-                onChange={setThumbnail}
-                previewTitle={title}
-              />
+              <ThumbnailPicker value={thumbnail} onChange={setThumbnail} previewTitle={title} />
             </div>
           )}
         </div>
 
-        {/* ── AI 言語化サポーター ───────────────────────── */}
+        {/* AI 言語化サポーター */}
         <div className="border border-teal-100 bg-teal-50 rounded-xl p-4">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div>
@@ -272,7 +249,6 @@ export default function NewQuestionPage() {
               </button>
             </div>
           </div>
-
           {wasPolished && !aiError && (
             <p className="text-xs text-teal-700 mt-2 flex items-center gap-1">
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -281,9 +257,7 @@ export default function NewQuestionPage() {
               AIが文章を整えました。内容を確認して必要に応じて編集してください。
             </p>
           )}
-          {aiError && (
-            <p className="text-xs text-red-600 mt-2">{aiError}</p>
-          )}
+          {aiError && <p className="text-xs text-red-600 mt-2">{aiError}</p>}
         </div>
 
         <div className="flex gap-3 pt-2">
@@ -296,7 +270,8 @@ export default function NewQuestionPage() {
           </button>
           <button
             type="submit"
-            className="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-sm py-2.5 rounded-lg font-medium transition-colors"
+            disabled={categories.length === 0}
+            className="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-sm py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             内容を確認する
           </button>
@@ -305,16 +280,23 @@ export default function NewQuestionPage() {
 
       {/* 確認モーダル */}
       {showModal && pendingData && (
-        <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4">
+        <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center px-4">
+          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full">
             <h2 className="text-lg font-bold text-gray-900 mb-1">投稿を確認</h2>
             <p className="text-sm text-gray-500 mb-4">この内容で質問を投稿しますか？</p>
 
             <div className="bg-gray-50 rounded-lg p-4 mb-5 space-y-2">
               <p className="text-sm font-medium text-gray-900 line-clamp-2">{pendingData.title}</p>
-              <p className="text-xs text-gray-400">
-                {pendingData.category}　／　{LEVELS.find(l => l.value === pendingData.level)?.label ?? pendingData.level}
-              </p>
+              <div className="flex flex-wrap gap-1">
+                {pendingData.category.split(",").map((c) => (
+                  <span key={c} className="text-xs bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full">
+                    {c}
+                  </span>
+                ))}
+                <span className="text-xs text-gray-400 ml-1">
+                  {LEVELS.find((l) => l.value === pendingData.level)?.label ?? pendingData.level}
+                </span>
+              </div>
               <p className="text-xs text-gray-500 line-clamp-3 leading-relaxed">{pendingData.content}</p>
               {pendingData.thumbnail ? (
                 <div className="relative w-full aspect-video rounded-lg overflow-hidden mt-1">
@@ -355,7 +337,7 @@ export default function NewQuestionPage() {
                 {loading && (
                   <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 000 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 01-8-8z" />
                   </svg>
                 )}
                 {loading ? "送信中..." : "投稿する"}

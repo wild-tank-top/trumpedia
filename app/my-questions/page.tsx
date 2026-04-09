@@ -125,9 +125,11 @@ export default async function MyQuestionsPage() {
                       <StatusIcon size={10} />
                       {status.label}
                     </span>
-                    <span className="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
-                      {q.category}
-                    </span>
+                    {q.category.split(",").map((cat) => (
+                      <span key={cat} className="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                        {cat.trim()}
+                      </span>
+                    ))}
                     <span className={`text-[11px] px-2 py-0.5 rounded-full ${ls.badge}`}>
                       {LEVEL_LABELS[q.level] ?? q.level}
                     </span>

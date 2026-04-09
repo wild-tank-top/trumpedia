@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { CATEGORIES } from "@/lib/constants";
+import { parseCategories } from "@/lib/constants";
 import { ImageIcon, ChevronDown } from "lucide-react";
 import ThumbnailPicker from "@/app/components/ThumbnailPicker";
+import CategoryChipSelector from "@/app/components/CategoryChipSelector";
 
 type Question = {
   id: number;
@@ -24,14 +25,16 @@ const LEVELS = [
 
 export default function EditQuestionForm({ question }: { question: Question }) {
   const router = useRouter();
-  const [loading, setLoading]     = useState(false);
-  const [error, setError]         = useState("");
-  const [title, setTitle]         = useState(question.title);
-  const [thumbnail, setThumbnail] = useState(question.thumbnail ?? "");
+  const [loading, setLoading]       = useState(false);
+  const [error, setError]           = useState("");
+  const [title, setTitle]           = useState(question.title);
+  const [thumbnail, setThumbnail]   = useState(question.thumbnail ?? "");
   const [showPicker, setShowPicker] = useState(false);
+  const [categories, setCategories] = useState<string[]>(parseCategories(question.category));
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (categories.length === 0) return;
     setLoading(true);
     setError("");
 
@@ -41,7 +44,7 @@ export default function EditQuestionForm({ question }: { question: Question }) {
 
     const data = {
       title,
-      category: get("category"),
+      category: categories.join(","),
       level:    get("level"),
       content:  get("content"),
       thumbnail,
@@ -85,35 +88,23 @@ export default function EditQuestionForm({ question }: { question: Question }) {
           />
         </Field>
 
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="カテゴリ" required>
-            <select
-              name="category"
-              required
-              defaultValue={question.category}
-              className="w-full border border-gray-300 rounded-lg p-3 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-400"
-            >
-              <option value="">選択してください</option>
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-          </Field>
+        <Field label="カテゴリ" required hint="最大3つまで選択できます">
+          <CategoryChipSelector selected={categories} onChange={setCategories} />
+        </Field>
 
-          <Field label="レベル" required>
-            <select
-              name="level"
-              required
-              defaultValue={question.level}
-              className="w-full border border-gray-300 rounded-lg p-3 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-400"
-            >
-              <option value="">選択してください</option>
-              {LEVELS.map((l) => (
-                <option key={l.value} value={l.value}>{l.label}</option>
-              ))}
-            </select>
-          </Field>
-        </div>
+        <Field label="レベル" required>
+          <select
+            name="level"
+            required
+            defaultValue={question.level}
+            className="w-full border border-gray-300 rounded-lg p-3 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-400"
+          >
+            <option value="">選択してください</option>
+            {LEVELS.map((l) => (
+              <option key={l.value} value={l.value}>{l.label}</option>
+            ))}
+          </select>
+        </Field>
 
         <Field label="詳細・補足" required hint="質問の意図や背景、補足情報を書いてください">
           <textarea
@@ -168,8 +159,8 @@ export default function EditQuestionForm({ question }: { question: Question }) {
           </Link>
           <button
             type="submit"
-            disabled={loading}
-            className="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-sm py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50"
+            disabled={loading || categories.length === 0}
+            className="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-sm py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "保存中..." : "変更を保存する"}
           </button>

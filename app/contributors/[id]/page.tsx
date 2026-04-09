@@ -284,9 +284,11 @@ export default async function ContributorPage({
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full">
-                      {answer.question.category}
-                    </span>
+                    {answer.question.category.split(",").map((cat) => (
+                      <span key={cat} className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full">
+                        {cat.trim()}
+                      </span>
+                    ))}
                     {!isApproved && (isOwnProfile || isAdmin) && (
                       <span className="text-xs bg-yellow-50 text-yellow-600 border border-yellow-200 px-2 py-0.5 rounded-full">
                         {answer.question.status === "rejected" ? "却下" : "承認待ち"}
