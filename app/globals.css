@@ -98,6 +98,29 @@ body {
   pointer-events: none;
 }
 
+/* Tier 1–5 — Generic metallic light sweep */
+@keyframes tier-metal-sweep {
+  0%   { opacity: 0;    transform: translateX(-120%) skewX(-18deg); }
+  35%  { opacity: 0.28; }
+  65%  { opacity: 0.28; }
+  100% { opacity: 0;    transform: translateX(420%) skewX(-18deg); }
+}
+
+.tier-metal-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(255,255,255,0.55) 50%,
+    transparent 100%
+  );
+  animation: tier-metal-sweep 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
 .tier-rose-shimmer::after {
   content: "";
   position: absolute;
