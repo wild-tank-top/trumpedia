@@ -36,11 +36,12 @@ export default function TierPreviewSelector({ current }: { current: number }) {
             <button
               key={t.min}
               onClick={() => handleSelect(t.min)}
-              className={`text-xs px-3 py-1.5 rounded-full border-2 font-medium transition-all ${
+              className={`relative overflow-hidden text-xs px-3 py-1.5 rounded-full border-2 font-medium transition-all ${
                 isActive
-                  ? `${t.border} ${t.bg} text-gray-700 shadow-sm scale-105`
+                  ? `${t.border} text-gray-700 shadow-sm scale-105 ${t.shimmerClass}`
                   : "border-gray-200 bg-white text-gray-400 hover:border-gray-300"
               }`}
+              style={isActive ? { background: t.cardInlineBg } : undefined}
             >
               {t.min}件〜
             </button>
