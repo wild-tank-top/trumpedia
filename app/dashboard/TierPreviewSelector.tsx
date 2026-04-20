@@ -1,19 +1,16 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { TIERS } from "@/lib/answerTier";
 
 export default function TierPreviewSelector({ current }: { current: number }) {
-  const router = useRouter();
-
   function handleSelect(min: number) {
     document.cookie = `tier_preview=${min}; path=/; max-age=86400`;
-    router.refresh();
+    window.location.reload();
   }
 
   function handleClear() {
     document.cookie = "tier_preview=; path=/; max-age=0";
-    router.refresh();
+    window.location.reload();
   }
 
   return (
