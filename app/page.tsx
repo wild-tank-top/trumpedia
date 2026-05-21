@@ -7,7 +7,6 @@ import AIChatNavigator from "./AIChatNavigator";
 import SearchBox from "./SearchBox";
 import Pagination from "./Pagination";
 import { LEVEL_LABELS, LEVEL_STYLES, DEFAULT_LEVEL_STYLE } from "@/lib/levelConfig";
-import TextThumbnail from "./components/TextThumbnail";
 import ThumbnailImage from "./components/ThumbnailImage";
 import { isManagedThumbnail, getAutoThumbnail } from "@/lib/thumbnails";
 import type { Prisma } from "@prisma/client";
@@ -97,8 +96,8 @@ export default async function HomePage({
     ...(searchQuery ? buildSearchWhere(searchQuery) : {}),
   };
 
-  // ── ページネーション付き質問取得 + 総件数 + AIナビゲーター用全件 ──
-  const [questions, totalCount, allQuestions] = await Promise.all([
+  // ── ページネーション付き質問取得 + 総件数 ──────────────────────
+  const [questions, totalCount] = await Promise.all([
     prisma.question.findMany({
       where,
       orderBy: buildOrderBy(sort, order),
@@ -111,17 +110,6 @@ export default async function HomePage({
       },
     }),
     prisma.question.count({ where }),
-    // AIナビゲーター用：カテゴリ・検索に関わらず全承認済み質問（上限250件）
-    prisma.question.findMany({
-      where: { status: "approved" },
-      orderBy: { createdAt: "desc" },
-      take: 250,
-      select: {
-        id: true, title: true, content: true,
-        category: true, level: true, createdAt: true, thumbnail: true,
-        _count: { select: { answers: true } },
-      },
-    }),
   ]);
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
@@ -164,7 +152,7 @@ export default async function HomePage({
       <CategoryFilter current={category} />
 
       {/* ── AIチャットナビゲーター ── */}
-      <AIChatNavigator questions={allQuestions} />
+      <AIChatNavigator />
 
       {/* ── ソート + 件数 ── */}
       <div className="flex items-center justify-between mb-4">

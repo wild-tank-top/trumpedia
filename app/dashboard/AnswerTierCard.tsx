@@ -1,4 +1,5 @@
-import { Trophy, Star, Sparkles } from "lucide-react";
+import type { CSSProperties } from "react";
+import { Crown, Gem, Medal, Sparkles, Star, Trophy } from "lucide-react";
 import { TIERS, getTier } from "@/lib/answerTier";
 import TierCornerOrnament from "@/app/components/TierCornerOrnament";
 
@@ -15,192 +16,122 @@ export default function AnswerTierCard({ totalAnswers }: { totalAnswers: number 
   const isAdvanced  = tier.index >= 4;
   const isMid       = tier.index >= 2;
 
-  // ── per-tier text colors ────────────────────────────────────
-  const nameColor = isLegendary ? "#78350f"
-    : isElite    ? "#881337"
-    : isAdvanced ? "#78350f"  // amber dark
-    : isMid      ? "#3730a3"
-    : "#111827";
-
-  const subColor = isLegendary ? "#b45309"
+  const accent = isLegendary ? "#b45309"
     : isElite    ? "#be123c"
-    : isAdvanced ? "#d97706"
-    : isMid      ? "#6d28d9"
-    : "#6b7280";
+    : isAdvanced ? "#b45309"
+    : isMid      ? "#4f46e5"
+    : "#334155";
 
-  // ── progress bar glow per tier ──────────────────────────────
-  const barGlow = isLegendary
-    ? "0 0 10px rgba(251,191,36,0.7), 0 0 20px rgba(245,158,11,0.4)"
-    : isElite
-    ? "0 0 6px rgba(251,113,133,0.6)"
-    : isAdvanced
-    ? "0 0 5px rgba(245,158,11,0.5)"
-    : isMid
-    ? "0 0 4px rgba(139,92,246,0.4)"
-    : "none";
+  const ink = isLegendary ? "#422006"
+    : isElite    ? "#4c0519"
+    : isAdvanced ? "#451a03"
+    : isMid      ? "#172554"
+    : "#0f172a";
 
-  const barHeight = isLegendary ? 10 : isElite ? 8 : isAdvanced ? 7 : 5;
+  const muted = isLegendary ? "#92400e"
+    : isElite    ? "#9f1239"
+    : isAdvanced ? "#a16207"
+    : isMid      ? "#4338ca"
+    : "#64748b";
+
+  const iconBg = isLegendary ? "linear-gradient(135deg, #fffbeb, #fbbf24, #92400e)"
+    : isElite    ? "linear-gradient(135deg, #fff1f2, #fb7185, #9f1239)"
+    : isAdvanced ? "linear-gradient(135deg, #fef3c7, #f59e0b, #92400e)"
+    : isMid      ? "linear-gradient(135deg, #eef2ff, #818cf8, #3730a3)"
+    : "linear-gradient(135deg, #f8fafc, #cbd5e1, #475569)";
+
+  const Icon = isLegendary ? Crown
+    : isElite    ? Gem
+    : isAdvanced ? Medal
+    : isMid      ? Star
+    : Trophy;
+
+  const achieved = nextTier ? totalAnswers - tier.min : totalAnswers;
+  const span = nextTier ? nextTier.min - tier.min : Math.max(totalAnswers, 1);
 
   return (
     <div
-      className={`${tier.shape} ${tier.glow} ${tier.shimmerClass} transition-all duration-500`}
-      style={{ background: tier.cardInlineBg, padding: isLegendary ? "28px" : isElite ? "24px" : "20px" }}
+      className={`answer-tier-card ${tier.shape} ${tier.glow} ${tier.shimmerClass}`}
+      style={{
+        "--tier-bg": tier.cardInlineBg,
+        "--tier-bar": tier.barInlineBg,
+        "--tier-accent": accent,
+        "--tier-ink": ink,
+        "--tier-muted": muted,
+        "--tier-icon-bg": iconBg,
+      } as CSSProperties}
     >
       <TierCornerOrnament
         level={tier.ornamentLevel}
         colorClass={tier.ornamentColor}
-        size={isLegendary ? 52 : isElite ? 44 : 36}
+        size={isLegendary ? 58 : isElite ? 50 : 40}
       />
 
-      {/* ── Top row: icon + label + count ── */}
-      <div className="flex items-start justify-between gap-4 mb-4 relative z-10">
-        <div className="flex-1 min-w-0">
-
-          {/* Tier rank label */}
-          <div className="flex items-center gap-1.5 mb-2">
-            {isLegendary ? (
-              <Sparkles size={13} style={{ color: "#f59e0b", fill: "#fde68a" }} />
-            ) : isElite ? (
-              <Star size={12} style={{ color: "#fb7185", fill: "#fecdd3" }} />
-            ) : (
-              <Trophy
-                size={12}
-                style={{ color: isMid ? "#818cf8" : "#9ca3af" }}
-              />
-            )}
-            <span
-              style={{
-                fontSize: "0.62rem",
-                fontWeight: 800,
-                letterSpacing: "0.18em",
-                textTransform: "uppercase",
-                color: subColor,
-              }}
-            >
-              Answer Tier
-            </span>
-          </div>
-
-          {/* Tier name */}
-          <h2
-            style={{
-              fontFamily: isMid ? "var(--font-playfair, 'Playfair Display', Georgia, serif)" : "inherit",
-              fontWeight: isLegendary ? 900 : 700,
-              fontSize: isLegendary ? "1.25rem" : isElite ? "1.1rem" : "1rem",
-              color: nameColor,
-              lineHeight: 1.3,
-              letterSpacing: isLegendary ? "-0.02em" : "-0.01em",
-            }}
-          >
-            {tier.label}
-          </h2>
-
-          {/* English badge */}
-          <div className="mt-2">
-            <span
-              className={`inline-block text-[11px] font-bold px-3 py-0.5 rounded-full ${tier.badge}`}
-              style={
-                isLegendary
-                  ? {
-                      background: "linear-gradient(90deg, #fde68a, #fbbf24, #fde68a)",
-                      color: "#78350f",
-                      boxShadow: "0 1px 8px rgba(251,191,36,0.45)",
-                    }
-                  : isElite
-                  ? { boxShadow: "0 1px 5px rgba(251,113,133,0.3)" }
-                  : {}
-              }
-            >
-              {tier.en}
-            </span>
-          </div>
-        </div>
-
-        {/* Answer count */}
-        <div className="text-right shrink-0 relative z-10">
-          <div
-            style={{
-              fontFamily: "var(--font-playfair, 'Playfair Display', Georgia, serif)",
-              fontWeight: 900,
-              fontSize: isLegendary ? "3.5rem" : isElite ? "3rem" : "2.5rem",
-              lineHeight: 1,
-              color: nameColor,
-              textShadow: isLegendary
-                ? "0 2px 12px rgba(251,191,36,0.3)"
-                : "none",
-            }}
-          >
-            {totalAnswers}
-          </div>
-          <p
-            style={{
-              fontSize: "0.6rem",
-              fontWeight: 700,
-              letterSpacing: "0.15em",
-              textTransform: "uppercase",
-              color: subColor,
-              marginTop: "2px",
-            }}
-          >
-            回答数
-          </p>
-        </div>
-      </div>
-
-      {/* ── Progress section ── */}
       <div className="relative z-10">
-        {nextTier ? (
-          <>
-            <div className="flex items-center justify-between mb-1.5">
-              <span style={{ fontSize: "0.68rem", color: subColor, opacity: 0.8 }}>
-                次「
-                <span style={{ fontWeight: 700 }}>{nextTier.label}</span>
-                」まで
-              </span>
-              <span style={{ fontSize: "0.68rem", fontWeight: 700, color: nameColor }}>
-                あと {toNext} 件
-              </span>
+        <div className="answer-tier-card__top">
+          <div className="answer-tier-card__identity">
+            <div className="answer-tier-card__medallion" aria-hidden="true">
+              <Icon size={isLegendary ? 28 : 24} strokeWidth={2.2} />
             </div>
 
-            {/* Track */}
-            <div
-              style={{
-                width: "100%",
-                height: `${barHeight}px`,
-                borderRadius: `${barHeight}px`,
-                background: "rgba(0,0,0,0.07)",
-                overflow: "hidden",
-              }}
-            >
-              {/* Fill */}
+            <div className="min-w-0">
+              <div className="answer-tier-card__eyebrow">
+                <Sparkles size={13} aria-hidden="true" />
+                <span>Answer Tier</span>
+              </div>
+              <h2 className="answer-tier-card__title">{tier.label}</h2>
+              <p className="answer-tier-card__subtitle">{tier.en}</p>
+            </div>
+          </div>
+
+          <div className="answer-tier-card__count" aria-label={`回答数 ${totalAnswers}件`}>
+            <span>{totalAnswers}</span>
+            <small>回答</small>
+          </div>
+        </div>
+
+        {nextTier ? (
+          <div className="answer-tier-card__progress">
+            <div className="answer-tier-card__progress-head">
+              <span>
+                次のランク <strong>{nextTier.label}</strong>
+              </span>
+              <strong>あと {toNext} 件</strong>
+            </div>
+
+            <div className="answer-tier-card__track" aria-hidden="true">
               <div
-                style={{
-                  height: "100%",
-                  width: `${Math.min(progress, 100)}%`,
-                  borderRadius: `${barHeight}px`,
-                  background: tier.barInlineBg,
-                  boxShadow: barGlow,
-                  transition: "width 0.7s cubic-bezier(0.4,0,0.2,1)",
-                }}
+                className="answer-tier-card__fill"
+                style={{ width: `${Math.min(progress, 100)}%` }}
               />
             </div>
 
-            <div className="flex justify-between mt-1">
-              <span style={{ fontSize: "0.6rem", color: "#9ca3af" }}>{tier.min}</span>
-              <span style={{ fontSize: "0.6rem", color: "#9ca3af" }}>{nextTier.min}</span>
+            <div className="answer-tier-card__range">
+              <span>{tier.min}</span>
+              <span>{nextTier.min}</span>
             </div>
-          </>
+          </div>
         ) : (
-          <div
-            className="flex items-center justify-center gap-2 py-2.5 rounded-xl"
-            style={{ background: "rgba(251,191,36,0.15)", border: "1px solid rgba(251,191,36,0.3)" }}
-          >
-            <Sparkles size={14} style={{ color: "#f59e0b", fill: "#fde68a" }} />
-            <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#92400e" }}>
-              最高ランク到達 ✨
-            </span>
+          <div className="answer-tier-card__max">
+            <Crown size={16} aria-hidden="true" />
+            <span>最高ランク到達</span>
           </div>
         )}
+
+        <div className="answer-tier-card__stats" aria-label="ランク進捗">
+          <div>
+            <span>現在</span>
+            <strong>{tier.min}+</strong>
+          </div>
+          <div>
+            <span>達成</span>
+            <strong>{Math.round(progress)}%</strong>
+          </div>
+          <div>
+            <span>区間</span>
+            <strong>{Math.max(achieved, 0)}/{span}</strong>
+          </div>
+        </div>
       </div>
     </div>
   );

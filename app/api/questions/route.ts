@@ -4,8 +4,27 @@ import { auth } from "@/auth";
 import { getDefaultImage } from "@/lib/defaultImages";
 
 // GET /api/questions - 承認済み質問一覧取得
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    if (req.nextUrl.searchParams.get("scope") === "ai-nav") {
+      const questions = await prisma.question.findMany({
+        where: { status: "approved" },
+        orderBy: { createdAt: "desc" },
+        take: 250,
+        select: {
+          id: true,
+          title: true,
+          content: true,
+          category: true,
+          level: true,
+          createdAt: true,
+          thumbnail: true,
+          _count: { select: { answers: true } },
+        },
+      });
+      return NextResponse.json(questions);
+    }
+
     const questions = await prisma.question.findMany({
       where: { status: "approved" },
       orderBy: { createdAt: "desc" },

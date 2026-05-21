@@ -2,14 +2,9 @@ import type { Metadata } from "next";
 import { Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
-import HeaderNav from "./HeaderNav";
-import NotificationBanner from "./components/NotificationBanner";
+import HeaderRuntime from "./components/HeaderRuntime";
 import Providers from "./providers";
 import Link from "next/link";
-import Image from "next/image";
-import { isAdmin } from "@/lib/roles";
-import { getTier } from "@/lib/answerTier";
 import { SITE_URL } from "@/lib/siteUrl";
 
 const notoSansJP = Noto_Sans_JP({
@@ -91,36 +86,6 @@ export default async function RootLayout({
 }) {
   const session = await auth();
 
-  const notifications = session?.user.id
-    ? await prisma.notification
-        .findMany({
-          where: { userId: session.user.id, isRead: false },
-          select: {
-            id: true,
-            questionId: true,
-            question: { select: { id: true, title: true } },
-          },
-          orderBy: { createdAt: "desc" },
-          take: 20,
-        })
-        .catch(() => [])
-    : [];
-
-  const unreadCount = notifications.length;
-
-  const answerCount = session?.user.id
-    ? await prisma.answer.count({ where: { userId: session.user.id } }).catch(() => 0)
-    : 0;
-  const tier = getTier(answerCount);
-  const tierRingClass = tier.ring;
-
-  const adminPendingCount =
-    isAdmin(session?.user.role)
-      ? await prisma.fellowApplication
-          .count({ where: { status: "referrer_approved" } })
-          .catch(() => 0)
-      : 0;
-
   return (
     <html lang="ja" className={notoSansJP.variable}>
       <head>
@@ -130,40 +95,7 @@ export default async function RootLayout({
         />
       </head>
       <body className="bg-gray-50 text-gray-800 min-h-screen">
-        <header className="bg-white border-b border-gray-200 sticky top-0 z-50 relative">
-          <div className="max-w-3xl mx-auto px-4 py-2 flex items-center justify-between">
-            <Link href="/" className="shrink-0">
-              <Image
-                src="/trumpedia-logo.png"
-                alt="Trumpedia"
-                height={56}
-                width={196}
-                className="h-10 sm:h-14 w-auto"
-                sizes="(max-width: 640px) 140px, 196px"
-                priority
-              />
-            </Link>
-            <HeaderNav session={session} unreadCount={unreadCount} tierRingClass={tierRingClass} />
-          </div>
-        </header>
-
-        {adminPendingCount > 0 && (
-          <div className="bg-blue-600 text-white text-sm px-4 py-2.5 flex items-center justify-center gap-3">
-            <span>
-              Fellows 最終承認待ちが
-              <span className="font-bold mx-1">{adminPendingCount}件</span>
-              あります
-            </span>
-            <Link
-              href="/admin"
-              className="underline underline-offset-2 font-medium hover:text-blue-100 transition-colors shrink-0"
-            >
-              管理画面を開く →
-            </Link>
-          </div>
-        )}
-
-        <NotificationBanner notifications={notifications} />
+        <HeaderRuntime session={session} />
 
         <main className="max-w-3xl mx-auto px-4 py-6">
           <Providers>{children}</Providers>

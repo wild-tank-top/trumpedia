@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Sparkles, X, Search } from "lucide-react";
-import TextThumbnail from "./components/TextThumbnail";
 import ThumbnailImage from "./components/ThumbnailImage";
 import { LEVEL_LABELS, LEVEL_STYLES, DEFAULT_LEVEL_STYLE } from "@/lib/levelConfig";
 import { isManagedThumbnail, getAutoThumbnail } from "@/lib/thumbnails";
@@ -20,8 +19,6 @@ type Question = {
   _count: { answers: number };
 };
 
-type Props = { questions: Question[] };
-
 /** AIが抽出したキーワードを類義語グループで展開する */
 function expandWithSynonyms(keywords: string[]): string[] {
   const expanded = new Set(keywords);
@@ -37,13 +34,26 @@ function expandWithSynonyms(keywords: string[]): string[] {
   return Array.from(expanded);
 }
 
-export default function AIChatNavigator({ questions }: Props) {
-  const [open,     setOpen]     = useState(false);
-  const [message,  setMessage]  = useState("");
-  const [loading,  setLoading]  = useState(false);
-  const [error,    setError]    = useState("");
-  const [keywords, setKeywords] = useState<string[]>([]);
-  const [filtered, setFiltered] = useState<Question[]>([]);
+export default function AIChatNavigator() {
+  const [open,      setOpen]      = useState(false);
+  const [message,   setMessage]   = useState("");
+  const [loading,   setLoading]   = useState(false);
+  const [error,     setError]     = useState("");
+  const [keywords,  setKeywords]  = useState<string[]>([]);
+  const [filtered,  setFiltered]  = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<Question[] | null>(null);
+
+  async function loadQuestions() {
+    if (questions) return questions;
+
+    const res = await fetch("/api/questions?scope=ai-nav");
+    const json = await res.json().catch(() => null) as Question[] | { error?: string } | null;
+    if (!res.ok || !Array.isArray(json)) {
+      throw new Error("質問データの取得に失敗しました");
+    }
+    setQuestions(json);
+    return json;
+  }
 
   // ── キーワード抽出 & フィルタリング ──────────────────
   async function handleSearch() {
@@ -75,10 +85,12 @@ export default function AIChatNavigator({ questions }: Props) {
       const kws = json.keywords ?? [];
       setKeywords(kws);
 
+      const questionList = await loadQuestions();
+
       // 類義語グループで展開してからマッチング
       const expandedKws = expandWithSynonyms(kws);
 
-      const matched = questions.filter((q) => {
+      const matched = questionList.filter((q) => {
         const text = q.title + " " + q.content + " " + q.category;
         return expandedKws.some((kw) => text.includes(kw));
       });
