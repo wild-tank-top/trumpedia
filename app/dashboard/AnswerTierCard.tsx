@@ -48,6 +48,8 @@ export default function AnswerTierCard({ totalAnswers }: { totalAnswers: number 
 
   const achieved = nextTier ? totalAnswers - tier.min : totalAnswers;
   const span = nextTier ? nextTier.min - tier.min : Math.max(totalAnswers, 1);
+  const tierNumber = String(tier.index + 1).padStart(2, "0");
+  const tierTotal = String(TIERS.length).padStart(2, "0");
 
   return (
     <div
@@ -61,6 +63,9 @@ export default function AnswerTierCard({ totalAnswers }: { totalAnswers: number 
         "--tier-icon-bg": iconBg,
       } as CSSProperties}
     >
+      <div className="answer-tier-card__aura" aria-hidden="true" />
+      <div className="answer-tier-card__grain" aria-hidden="true" />
+
       <TierCornerOrnament
         level={tier.ornamentLevel}
         colorClass={tier.ornamentColor}
@@ -68,6 +73,11 @@ export default function AnswerTierCard({ totalAnswers }: { totalAnswers: number 
       />
 
       <div className="relative z-10">
+        <div className="answer-tier-card__ribbon">
+          <span>Fellow Rank</span>
+          <strong>{tierNumber} / {tierTotal}</strong>
+        </div>
+
         <div className="answer-tier-card__top">
           <div className="answer-tier-card__identity">
             <div className="answer-tier-card__medallion" aria-hidden="true">
@@ -85,6 +95,7 @@ export default function AnswerTierCard({ totalAnswers }: { totalAnswers: number 
           </div>
 
           <div className="answer-tier-card__count" aria-label={`回答数 ${totalAnswers}件`}>
+            <em>Total</em>
             <span>{totalAnswers}</span>
             <small>回答</small>
           </div>
